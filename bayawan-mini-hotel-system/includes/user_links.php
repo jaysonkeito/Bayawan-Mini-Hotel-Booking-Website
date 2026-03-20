@@ -34,3 +34,5 @@ $settings_r = mysqli_fetch_assoc(select($settings_q, $values, 'i'));
 
 <!-- Custom CSS -->
 <link rel="stylesheet" href="css/user_common.css">
+
+<?php require_once __DIR__ . '/lang.php'; ?>

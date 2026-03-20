@@ -1,6 +1,6 @@
 <?php // bayawan-mini-hotel-system/user_confirm_booking.php ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['lang'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,11 +13,8 @@
 <?php require('includes/user_header.php'); ?>
 
 <?php
-    if (!isset($_GET['id']) || $settings_r['shutdown'] == true) {
-        redirect('user_rooms.php');
-    } elseif (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) {
-        redirect('user_rooms.php');
-    }
+    if (!isset($_GET['id']) || $settings_r['shutdown'] == true) redirect('user_rooms.php');
+    elseif (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) redirect('user_rooms.php');
 
     $data = filteration($_GET);
 
@@ -25,7 +22,6 @@
         "SELECT * FROM `rooms` WHERE `id` = ? AND `status` = ? AND `removed` = ?",
         [$data['id'], 1, 0], 'iii'
     );
-
     if (mysqli_num_rows($room_res) == 0) redirect('user_rooms.php');
 
     $room_data = mysqli_fetch_assoc($room_res);
@@ -41,9 +37,7 @@
     $user_res  = select("SELECT * FROM `user_cred` WHERE `id` = ? LIMIT 1", [$_SESSION['uId']], 'i');
     $user_data = mysqli_fetch_assoc($user_res);
 
-    $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-
-    // Pre-fill dates if coming from the availability calendar
+    $cart_count       = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
     $prefill_checkin  = isset($data['checkin'])  ? $data['checkin']  : '';
     $prefill_checkout = isset($data['checkout']) ? $data['checkout'] : '';
 ?>
@@ -52,17 +46,17 @@
     <div class="row">
 
         <div class="col-12 my-5 mb-4 px-4">
-            <h2 class="fw-bold">CONFIRM BOOKING</h2>
+            <h2 class="fw-bold"><?php echo t('cb_title'); ?></h2>
             <div style="font-size:14px;">
-                <a href="user_index.php" class="text-secondary text-decoration-none">HOME</a>
+                <a href="user_index.php" class="text-secondary text-decoration-none"><?php echo t('bc_home'); ?></a>
                 <span class="text-secondary"> > </span>
-                <a href="user_rooms.php" class="text-secondary text-decoration-none">ROOMS</a>
+                <a href="user_rooms.php" class="text-secondary text-decoration-none"><?php echo t('bc_rooms'); ?></a>
                 <span class="text-secondary"> > </span>
                 <a href="user_room_details.php?id=<?php echo $room_data['id'] ?>" class="text-secondary text-decoration-none">
                     <?php echo $room_data['name'] ?>
                 </a>
                 <span class="text-secondary"> > </span>
-                <a href="#" class="text-secondary text-decoration-none">CONFIRM</a>
+                <a href="#" class="text-secondary text-decoration-none"><?php echo t('bc_confirm'); ?></a>
             </div>
         </div>
 
@@ -72,16 +66,15 @@
             $room_thumb = ROOMS_IMG_PATH . 'thumbnail.jpg';
             $thumb_q    = mysqli_query($conn, "SELECT * FROM `room_images`
                 WHERE `room_id` = '$room_data[id]' AND `thumb` = '1'");
-
             if (mysqli_num_rows($thumb_q) > 0) {
                 $thumb_res  = mysqli_fetch_assoc($thumb_q);
                 $room_thumb = ROOMS_IMG_PATH . $thumb_res['image'];
             }
-
+            $lbl_per_night = t('room_per_night');
             echo "<div class='card p-3 shadow-sm rounded'>
                 <img src='$room_thumb' class='img-fluid rounded mb-3'>
                 <h5>$room_data[name]</h5>
-                <h6>&#8369;$room_data[price] per night</h6>
+                <h6>&#8369;$room_data[price] {$lbl_per_night}</h6>
             </div>";
             ?>
         </div>
@@ -91,30 +84,30 @@
             <div class="card mb-4 border-0 shadow-sm rounded-3">
                 <div class="card-body">
                     <form action="user_pay_now.php" method="POST" id="booking_form">
-                        <h6 class="mb-3">BOOKING DETAILS</h6>
+                        <h6 class="mb-3"><?php echo t('cb_details'); ?></h6>
                         <div class="row">
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Name</label>
+                                <label class="form-label"><?php echo t('cb_name'); ?></label>
                                 <input name="name" type="text"
                                        value="<?php echo $user_data['name'] ?>"
                                        class="form-control shadow-none" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Phone Number</label>
+                                <label class="form-label"><?php echo t('cb_phone'); ?></label>
                                 <input name="phonenum" type="number"
                                        value="<?php echo $user_data['phonenum'] ?>"
                                        class="form-control shadow-none" required>
                             </div>
 
                             <div class="col-md-12 mb-3">
-                                <label class="form-label">Address</label>
+                                <label class="form-label"><?php echo t('cb_address'); ?></label>
                                 <textarea name="address" class="form-control shadow-none" rows="1" required><?php echo $user_data['address'] ?></textarea>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Check-in</label>
+                                <label class="form-label"><?php echo t('cb_checkin'); ?></label>
                                 <input name="checkin"
                                        onchange="check_availability()"
                                        type="date"
@@ -123,7 +116,7 @@
                             </div>
 
                             <div class="col-md-6 mb-4">
-                                <label class="form-label">Check-out</label>
+                                <label class="form-label"><?php echo t('cb_checkout'); ?></label>
                                 <input name="checkout"
                                        onchange="check_availability()"
                                        type="date"
@@ -137,14 +130,14 @@
                                 </div>
 
                                 <h6 class="mb-3 text-danger" id="pay_info">
-                                    Provide check-in &amp; check-out date!
+                                    <?php echo t('cb_provide_dates'); ?>
                                 </h6>
 
                                 <button name="pay_now"
                                         id="pay-now-btn"
                                         class="btn w-100 text-white custom-bg shadow-none mb-2"
                                         disabled>
-                                    <i class="bi bi-credit-card me-1"></i> Pay Now
+                                    <i class="bi bi-credit-card me-1"></i> <?php echo t('cb_pay_now'); ?>
                                 </button>
 
                                 <button type="button"
@@ -153,7 +146,7 @@
                                         class="btn w-100 btn-outline-dark shadow-none mb-1"
                                         disabled>
                                     <i class="bi bi-cart-plus me-1"></i>
-                                    Add to Cart
+                                    <?php echo t('cb_add_cart'); ?>
                                     <?php if ($cart_count > 0): ?>
                                         <span class="badge bg-danger ms-1" id="cart-badge-confirm"><?php echo $cart_count ?></span>
                                     <?php else: ?>
@@ -165,8 +158,8 @@
                                      class="text-center mt-1 <?php echo $cart_count > 0 ? '' : 'd-none' ?>">
                                     <a href="user_cart.php" class="text-decoration-none small custom-text-teal">
                                         <i class="bi bi-cart3 me-1"></i>
-                                        View Cart
-                                        (<span id="cart-count-text"><?php echo $cart_count ?></span> room<?php echo $cart_count !== 1 ? 's' : '' ?>)
+                                        <?php echo t('cb_view_cart'); ?>
+                                        (<span id="cart-count-text"><?php echo $cart_count ?></span>)
                                     </a>
                                 </div>
 
@@ -189,13 +182,11 @@
     let payNowBtn    = document.getElementById('pay-now-btn');
     let addToCartBtn = document.getElementById('add-to-cart-btn');
 
-    // ── Auto-check availability if dates were pre-filled from calendar ──
+    // Auto-check if dates were pre-filled from calendar
     window.addEventListener('DOMContentLoaded', function () {
         const checkin  = booking_form.elements['checkin'].value;
         const checkout = booking_form.elements['checkout'].value;
-        if (checkin && checkout) {
-            check_availability();
-        }
+        if (checkin && checkout) check_availability();
     });
 
     function check_availability() {
@@ -268,7 +259,7 @@
             .then(function (res) {
                 if (res.status === 'success') {
                     updateConfirmCartUI(res.count);
-                    alert('success', res.message + ' — <a href="user_cart.php" class="alert-link">View Cart</a>');
+                    alert('success', res.message + ' — <a href="user_cart.php" class="alert-link"><?php echo t("cb_view_cart"); ?></a>');
                 } else if (res.status === 'duplicate') {
                     alert('error', 'This room with these dates is already in your cart.');
                 } else {
@@ -278,7 +269,7 @@
             .catch(() => alert('error', 'Connection error. Please try again.'))
             .finally(() => {
                 addToCartBtn.disabled  = false;
-                addToCartBtn.innerHTML = '<i class="bi bi-cart-plus me-1"></i> Add to Cart'
+                addToCartBtn.innerHTML = '<i class="bi bi-cart-plus me-1"></i> <?php echo t("cb_add_cart"); ?>'
                     + ` <span class="badge bg-danger ms-1">${document.getElementById('cart-badge-confirm').textContent}</span>`;
             });
     }
@@ -287,16 +278,11 @@
         let badge    = document.getElementById('cart-badge-confirm');
         let link     = document.getElementById('view-cart-link');
         let countTxt = document.getElementById('cart-count-text');
-
         if (badge)    { badge.textContent = count; badge.classList.remove('d-none'); }
         if (link)     link.classList.remove('d-none');
         if (countTxt) countTxt.textContent = count;
-
         let headerBadge = document.getElementById('cart-badge');
-        if (headerBadge) {
-            headerBadge.textContent   = count;
-            headerBadge.style.display = count > 0 ? 'inline-flex' : 'none';
-        }
+        if (headerBadge) { headerBadge.textContent = count; headerBadge.style.display = count > 0 ? 'inline-flex' : 'none'; }
     }
 </script>
 

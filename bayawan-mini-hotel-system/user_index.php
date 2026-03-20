@@ -1,6 +1,6 @@
 <?php // bayawan-mini-hotel-system/user_index.php ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['lang'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,21 +13,19 @@
             margin-top: -50px;
             z-index: 2;
             position: relative;
-            }
-            @media screen and (max-width: 575px) {
+        }
+        @media screen and (max-width: 575px) {
             .availability-form {
                 margin-top: 25px;
                 padding: 0 35px;
             }
         }
-        /* ─── Add this ─── */
         .swiper-container .swiper-slide img {
             width: 100%;
             height: 450px;
             object-fit: cover;
             object-position: center;
         }
-
         @media screen and (max-width: 768px) {
             .swiper-container .swiper-slide img {
                 height: 250px;
@@ -61,19 +59,19 @@
     <div class="container availability-form">
         <div class="row">
         <div class="col-lg-12 bg-white shadow p-4 rounded">
-            <h5 class="mb-4">Check Booking Availability</h5>
+            <h5 class="mb-4"><?php echo t('home_check_title'); ?></h5>
             <form action="user_rooms.php">
             <div class="row align-items-end">
                 <div class="col-lg-3 mb-3">
-                <label class="form-label" style="font-weight: 500;">Check-in</label>
+                <label class="form-label" style="font-weight: 500;"><?php echo t('home_checkin'); ?></label>
                 <input type="date" class="form-control shadow-none" name="checkin" required>
                 </div>
                 <div class="col-lg-3 mb-3">
-                <label class="form-label" style="font-weight: 500;">Check-out</label>
+                <label class="form-label" style="font-weight: 500;"><?php echo t('home_checkout'); ?></label>
                 <input type="date" class="form-control shadow-none" name="checkout" required>
                 </div>
                 <div class="col-lg-2 mb-3">
-                <label class="form-label" style="font-weight: 500;">Adults</label>
+                <label class="form-label" style="font-weight: 500;"><?php echo t('home_adults'); ?></label>
                 <select class="form-select shadow-none" name="adult">
                     <?php 
                     $guests_q = mysqli_query($conn, "SELECT MAX(adult) AS `max_adult`, MAX(children) AS `max_children` 
@@ -88,7 +86,7 @@
                 </select>
                 </div>
                 <div class="col-lg-2 mb-3">
-                <label class="form-label" style="font-weight: 500;">Children</label>
+                <label class="form-label" style="font-weight: 500;"><?php echo t('home_children'); ?></label>
                 <select class="form-select shadow-none" name="children">
                     <?php 
                     echo "<option value='0'>0</option>";
@@ -100,7 +98,7 @@
                 </div>
                 <input type="hidden" name="check_availability">
                 <div class="col-lg-2 mb-3">
-                <button type="submit" class="btn w-100 text-white shadow-none custom-bg">Check Now</button>
+                <button type="submit" class="btn w-100 text-white shadow-none custom-bg"><?php echo t('home_check_btn'); ?></button>
                 </div>
             </div>
             </form>
@@ -109,7 +107,7 @@
     </div>
 
     <!-- Our Rooms -->
-    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font">OUR ROOMS</h2>
+    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font"><?php echo t('home_rooms_title'); ?></h2>
 
     <div class="container">
         <div class="row">
@@ -147,7 +145,6 @@
                 $thumb_res = mysqli_fetch_assoc($thumb_q);
                 $room_thumb = ROOMS_IMG_PATH . $thumb_res['image'];
             } else {
-                // ✅ Fallback: use first available image if no thumbnail set
                 $first_img_q = mysqli_query($conn, "SELECT * FROM `room_images` 
                     WHERE `room_id`='$room_data[id]' LIMIT 1");
                 if(mysqli_num_rows($first_img_q) > 0){
@@ -160,7 +157,11 @@
             $book_btn = "";
             if(!$settings_r['shutdown']){
                 $login = (isset($_SESSION['login']) && $_SESSION['login'] == true) ? 1 : 0;
-                $book_btn = "<button onclick='checkLoginToBook($login,$room_data[id])' class='btn btn-sm text-white custom-bg shadow-none'>Book Now</button>";
+                $book_lbl = t('room_book_now');
+                $book_btn = "<button onclick='checkLoginToBook($login,$room_data[id])' class='btn btn-sm text-white custom-bg shadow-none'>$book_lbl</button>";
+            } else {
+                $closed_lbl = t('room_closed');
+                $book_btn = "<button class='btn btn-sm btn-danger shadow-none' disabled>$closed_lbl</button>";
             }
 
             // Rating
@@ -170,12 +171,21 @@
 
             $rating_data = "";
             if($rating_fetch['avg_rating'] != NULL){
-                $rating_data = "<div class='rating mb-4'><h6 class='mb-1'>Rating</h6><span class='badge rounded-pill bg-light'>";
+                $rating_lbl  = t('room_rating');
+                $rating_data = "<div class='rating mb-4'><h6 class='mb-1'>$rating_lbl</h6><span class='badge rounded-pill bg-light'>";
                 for($i = 0; $i < $rating_fetch['avg_rating']; $i++){
-                $rating_data .= "<i class='bi bi-star-fill text-warning'></i> ";
+                    $rating_data .= "<i class='bi bi-star-fill text-warning'></i> ";
                 }
                 $rating_data .= "</span></div>";
             }
+
+            $lbl_features   = t('room_features');
+            $lbl_facilities = t('room_facilities');
+            $lbl_guests     = t('room_guests');
+            $lbl_adults     = t('room_adults');
+            $lbl_children   = t('room_children');
+            $lbl_per_night  = t('room_per_night');
+            $lbl_details    = t('room_details');
 
             echo <<<data
                 <div class="col-lg-4 col-md-6 my-3">
@@ -183,24 +193,24 @@
                     <img src="$room_thumb" class="card-img-top">
                     <div class="card-body">
                     <h5>$room_data[name]</h5>
-                    <h6 class="mb-4">&#8369;$room_data[price] per night</h6>
+                    <h6 class="mb-4">&#8369;$room_data[price] $lbl_per_night</h6>
                     <div class="features mb-4">
-                        <h6 class="mb-1">Features</h6>
+                        <h6 class="mb-1">$lbl_features</h6>
                         $features_data
                     </div>
                     <div class="facilities mb-4">
-                        <h6 class="mb-1">Facilities</h6>
+                        <h6 class="mb-1">$lbl_facilities</h6>
                         $facilities_data
                     </div>
                     <div class="guests mb-4">
-                        <h6 class="mb-1">Guests</h6>
-                        <span class="badge rounded-pill bg-light text-dark text-wrap">$room_data[adult] Adults</span>
-                        <span class="badge rounded-pill bg-light text-dark text-wrap">$room_data[children] Children</span>
+                        <h6 class="mb-1">$lbl_guests</h6>
+                        <span class="badge rounded-pill bg-light text-dark text-wrap">$room_data[adult] $lbl_adults</span>
+                        <span class="badge rounded-pill bg-light text-dark text-wrap">$room_data[children] $lbl_children</span>
                     </div>
                     $rating_data
                     <div class="d-flex justify-content-evenly mb-2">
                         $book_btn
-                        <a href="user_room_details.php?id=$room_data[id]" class="btn btn-sm btn-outline-dark shadow-none">More details</a>
+                        <a href="user_room_details.php?id=$room_data[id]" class="btn btn-sm btn-outline-dark shadow-none">$lbl_details</a>
                     </div>
                     </div>
                 </div>
@@ -210,13 +220,13 @@
         ?>
 
         <div class="col-lg-12 text-center mt-5">
-            <a href="user_rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
+            <a href="user_rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none"><?php echo t('home_more_rooms'); ?></a>
         </div>
         </div>
     </div>
 
     <!-- Our Facilities -->
-    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font">OUR FACILITIES</h2>
+    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font"><?php echo t('home_facilities'); ?></h2>
 
     <div class="container">
         <div class="row justify-content-evenly px-lg-0 px-md-0 px-5">
@@ -234,13 +244,13 @@
             }
         ?>
         <div class="col-lg-12 text-center mt-5">
-            <a href="user_facilities.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Facilities >>></a>
+            <a href="user_facilities.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none"><?php echo t('home_more_fac'); ?></a>
         </div>
         </div>
     </div>
 
     <!-- Testimonials -->
-    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font">TESTIMONIALS</h2>
+    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font"><?php echo t('home_testimonials'); ?></h2>
 
     <div class="container mt-5">
         <div class="swiper swiper-testimonials">
@@ -256,7 +266,7 @@
             $img_path   = USERS_IMG_PATH;
 
             if(mysqli_num_rows($review_res) == 0){
-                echo '<p class="text-center text-muted">No reviews yet!</p>';
+                echo '<p class="text-center text-muted">' . t('home_no_reviews') . '</p>';
             } else {
                 while($row = mysqli_fetch_assoc($review_res)){
                 $stars = "<i class='bi bi-star-fill text-warning'></i>";
@@ -281,12 +291,12 @@
         <div class="swiper-pagination"></div>
         </div>
         <div class="col-lg-12 text-center mt-5">
-        <a href="user_about.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">Know More >>></a>
+        <a href="user_about.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none"><?php echo t('home_know_more'); ?></a>
         </div>
     </div>
 
     <!-- Reach Us -->
-    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font">REACH US</h2>
+    <h2 class="mt-5 pt-4 mb-4 text-center fw-bold h-font"><?php echo t('home_reach'); ?></h2>
 
     <div class="container">
         <div class="row">
@@ -295,7 +305,7 @@
         </div>
         <div class="col-lg-4 col-md-4">
             <div class="bg-white p-4 rounded mb-4">
-            <h5>Call us</h5>
+            <h5><?php echo t('home_call'); ?></h5>
             <a href="tel:<?php echo $contact_r['pn1'] ?>" class="d-inline-block mb-2 text-decoration-none text-dark">
                 <i class="bi bi-telephone-fill"></i> <?php echo $contact_r['pn1'] ?>
             </a>
@@ -307,7 +317,7 @@
             <?php } ?>
             </div>
             <div class="bg-white p-4 rounded mb-4">
-            <h5>Follow us</h5>
+            <h5><?php echo t('home_follow'); ?></h5>
             <?php if($contact_r['tw'] != ''){ ?>
                 <a href="<?php echo $contact_r['tw'] ?>" class="d-inline-block mb-3">
                 <span class="badge bg-light text-dark fs-6 p-2">
@@ -330,7 +340,7 @@
                 </a>
             <?php } ?>
             <?php if($contact_r['tw'] == '' && $contact_r['fb'] == '' && $contact_r['insta'] == ''){ ?>
-                <p class="text-muted">No social media links yet.</p>
+                <p class="text-muted"><?php echo t('home_no_social'); ?></p>
             <?php } ?>
             </div>
         </div>
@@ -349,13 +359,13 @@
             </div>
             <div class="modal-body">
                 <div class="mb-4">
-                <label class="form-label">New Password</label>
+                <label class="form-label"><?php echo t('login_password'); ?></label>
                 <input type="password" name="pass" required class="form-control shadow-none">
                 <input type="hidden" name="email">
                 <input type="hidden" name="token">
                 </div>
                 <div class="mb-2 text-end">
-                <button type="button" class="btn shadow-none me-2" data-bs-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn shadow-none me-2" data-bs-dismiss="modal"><?php echo t('forgot_cancel'); ?></button>
                 <button type="submit" class="btn btn-dark shadow-none">SUBMIT</button>
                 </div>
             </div>
@@ -403,7 +413,6 @@
     ?>
 
     <script>
-        // ─── Carousel Swiper ───
         var swiper = new Swiper(".swiper-container", {
         spaceBetween: 30,
         effect: "fade",
@@ -414,7 +423,6 @@
         }
         });
 
-        // ─── Testimonials Swiper ───
         var swiperTestimonials = new Swiper(".swiper-testimonials", {
         effect: "coverflow",
         grabCursor: true,
@@ -438,17 +446,16 @@
         }
         });
 
-        // ─── Account Recovery Form ───
         let recovery_form = document.getElementById('recovery-form');
         if(recovery_form){
         recovery_form.addEventListener('submit', (e) => {
             e.preventDefault();
 
             let data = new FormData();
-            data.append('email',        recovery_form.elements['email'].value);
-            data.append('token',        recovery_form.elements['token'].value);
-            data.append('pass',         recovery_form.elements['pass'].value);
-            data.append('action',       'recover_password');
+            data.append('email',  recovery_form.elements['email'].value);
+            data.append('token',  recovery_form.elements['token'].value);
+            data.append('pass',   recovery_form.elements['pass'].value);
+            data.append('action', 'recover_password');
 
             bootstrap.Modal.getInstance(document.getElementById('recoveryModal'))?.hide();
 

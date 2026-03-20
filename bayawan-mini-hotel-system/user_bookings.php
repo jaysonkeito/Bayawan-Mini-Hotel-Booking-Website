@@ -1,6 +1,6 @@
 <?php // bayawan-mini-hotel-system/user_bookings.php ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['lang'] ?? 'en'; ?>">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,40 +12,37 @@
 
   <?php
     require('includes/user_header.php');
-
-    if (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) {
-        redirect('user_index.php');
-    }
+    if (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) redirect('user_index.php');
   ?>
 
   <div class="container">
     <div class="row">
 
       <div class="col-12 my-5 px-4">
-        <h2 class="fw-bold">BOOKINGS</h2>
-        <div style="font-size: 14px;">
-          <a href="user_index.php" class="text-secondary text-decoration-none">HOME</a>
+        <h2 class="fw-bold"><?php echo t('bookings_title'); ?></h2>
+        <div style="font-size:14px;">
+          <a href="user_index.php" class="text-secondary text-decoration-none"><?php echo t('bc_home'); ?></a>
           <span class="text-secondary"> > </span>
-          <a href="#" class="text-secondary text-decoration-none">BOOKINGS</a>
+          <a href="#" class="text-secondary text-decoration-none"><?php echo t('bc_bookings'); ?></a>
         </div>
       </div>
 
-      <!-- ── Cancellation Policy Notice ── -->
+      <!-- Cancellation Policy Notice -->
       <div class="col-12 px-4 mb-4">
         <div class="alert alert-info border-0 shadow-sm" role="alert">
-          <h6 class="fw-bold mb-2"><i class="bi bi-info-circle-fill me-2"></i>Cancellation Policy</h6>
+          <h6 class="fw-bold mb-2"><i class="bi bi-info-circle-fill me-2"></i><?php echo t('bookings_policy_title'); ?></h6>
           <div class="row g-2" style="font-size:13px;">
             <div class="col-md-4">
-              <span class="badge bg-success me-1">✅ Full Refund</span>
-              Cancel <strong>72+ hours</strong> before check-in
+              <span class="badge bg-success me-1">✅ <?php echo t('bookings_full_ref'); ?></span>
+              <?php echo t('bookings_72h'); ?>
             </div>
             <div class="col-md-4">
-              <span class="badge bg-warning text-dark me-1">⚠️ 50% Penalty</span>
-              Cancel <strong>24–72 hours</strong> before check-in
+              <span class="badge bg-warning text-dark me-1">⚠️ <?php echo t('bookings_50pct'); ?></span>
+              <?php echo t('bookings_24_72h'); ?>
             </div>
             <div class="col-md-4">
-              <span class="badge bg-danger me-1">❌ 1st Night Forfeited</span>
-              Cancel <strong>less than 24 hours</strong> before check-in
+              <span class="badge bg-danger me-1">❌ <?php echo t('bookings_1night'); ?></span>
+              <?php echo t('bookings_lt24h'); ?>
             </div>
           </div>
         </div>
@@ -72,69 +69,73 @@
 
           if ($data['booking_status'] == 'booked') {
             $status_bg = "bg-success";
-
             if ($data['arrival'] == 1) {
+              $lbl_pdf = t('bookings_dl_pdf');
               $btn = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
-                        class='btn btn-dark btn-sm shadow-none'>Download PDF</a>";
-
+                        class='btn btn-dark btn-sm shadow-none'>$lbl_pdf</a>";
               if ($data['rate_review'] == 0) {
+                $lbl_rate = t('bookings_rate');
                 $btn .= "<button type='button'
                            onclick='review_room($data[booking_id], $data[room_id])'
                            data-bs-toggle='modal' data-bs-target='#reviewModal'
                            class='btn btn-dark btn-sm shadow-none ms-2'>
-                           Rate &amp; Review
+                           $lbl_rate
                          </button>";
               }
             } else {
-              // Show cancel button — policy preview on click
-              $btn = "<button
-                        onclick='show_cancel_preview($data[booking_id])'
+              $lbl_cancel = t('bookings_cancel');
+              $btn = "<button onclick='show_cancel_preview($data[booking_id])'
                         type='button'
                         class='btn btn-danger btn-sm shadow-none'>
-                        Cancel
+                        $lbl_cancel
                       </button>";
             }
-
           } elseif ($data['booking_status'] == 'cancelled') {
             $status_bg = "bg-danger";
-
-            // Show refund_amt if available, else trans_amt
             $refund_display = isset($data['refund_amt']) && $data['refund_amt'] !== null
               ? number_format($data['refund_amt'], 2)
               : number_format($data['trans_amt'], 2);
-
+            $lbl_refund_proc = t('bookings_refund_proc');
+            $lbl_refund      = t('bookings_refund_lbl');
             if ($data['refund'] == 0) {
-              $btn = "<span class='badge bg-primary'>Refund in process!</span>
-                      <br><small class='text-muted'>Refund: ₱{$refund_display}</small>";
+              $btn = "<span class='badge bg-primary'>{$lbl_refund_proc}</span>
+                      <br><small class='text-muted'>{$lbl_refund}: ₱{$refund_display}</small>";
             } else {
+              $lbl_pdf = t('bookings_dl_pdf');
               $btn = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
-                        class='btn btn-dark btn-sm shadow-none'>Download PDF</a>";
+                        class='btn btn-dark btn-sm shadow-none'>$lbl_pdf</a>";
             }
-
           } else {
             $status_bg = "bg-warning";
+            $lbl_pdf   = t('bookings_dl_pdf');
             $btn       = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
-                            class='btn btn-dark btn-sm shadow-none'>Download PDF</a>";
+                            class='btn btn-dark btn-sm shadow-none'>$lbl_pdf</a>";
           }
 
-          // No-show badge
+          $no_show_lbl   = t('bookings_no_show');
           $no_show_badge = (!empty($data['no_show']) && $data['no_show'] == 1)
-            ? "<span class='badge bg-secondary ms-1'>No-Show</span>"
+            ? "<span class='badge bg-secondary ms-1'>$no_show_lbl</span>"
             : "";
+
+          $lbl_checkin  = t('bookings_checkin');
+          $lbl_checkout = t('bookings_checkout');
+          $lbl_paid     = t('bookings_paid');
+          $lbl_order    = t('bookings_order_id');
+          $lbl_date     = t('bookings_date');
 
           echo <<<bookings
             <div class='col-md-4 px-4 mb-4'>
               <div class='bg-white p-3 rounded shadow-sm'>
                 <h5 class='fw-bold'>$data[room_name]</h5>
-                <p>₱$data[price] per night</p>
+                <p>₱$data[price] {$lbl_date}</p>
                 <p>
-                  <b>Check in:</b> $checkin <br>
-                  <b>Check out:</b> $checkout
+                  <b>$lbl_checkin:</b> $checkin <br>
+                  <b>$lbl_checkout:</b> $checkout
                 </p>
                 <p>
-                  <b>Amount Paid:</b> ₱$data[trans_amt] <br>
-                  <b>Order ID:</b> $data[order_id] <br>
-                  <b>Date:</b> $date
+                  <b>$lbl_paid:</b> ₱$data[trans_amt] <br>
+                  <b>$lbl_order:</b> $data[order_id] <br>
+                  <b>$lbl_date:</b> $date
                 </p>
                 <p>
                   <span class='badge $status_bg'>$data[booking_status]</span>
@@ -150,61 +151,59 @@
     </div>
   </div>
 
-
-  <!-- ── Cancel Preview Modal ── -->
+  <!-- Cancel Preview Modal -->
   <div class="modal fade" id="cancelPreviewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Cancel Booking</h5>
+          <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i><?php echo t('bookings_cancel_title'); ?></h5>
         </div>
         <div class="modal-body" id="cancel-preview-body">
           <div class="text-center py-3">
             <div class="spinner-border text-secondary" role="status"></div>
-            <p class="mt-2 text-muted small">Calculating refund...</p>
+            <p class="mt-2 text-muted small"><?php echo t('bookings_calc_refund'); ?></p>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn text-secondary shadow-none" data-bs-dismiss="modal">Keep Booking</button>
+          <button type="button" class="btn text-secondary shadow-none" data-bs-dismiss="modal"><?php echo t('bookings_keep'); ?></button>
           <button type="button" id="confirm-cancel-btn" class="btn btn-danger shadow-none" disabled>
-            Confirm Cancellation
+            <?php echo t('bookings_confirm_cancel'); ?>
           </button>
         </div>
       </div>
     </div>
   </div>
 
-
-  <!-- ── Rate & Review Modal ── -->
+  <!-- Rate & Review Modal -->
   <div class="modal fade" id="reviewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form id="review-form">
           <div class="modal-header">
             <h5 class="modal-title d-flex align-items-center">
-              <i class="bi bi-chat-square-heart-fill fs-3 me-2"></i> Rate &amp; Review
+              <i class="bi bi-chat-square-heart-fill fs-3 me-2"></i> <?php echo t('bookings_review_title'); ?>
             </h5>
             <button type="reset" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Rating</label>
+              <label class="form-label"><?php echo t('bookings_review_rating'); ?></label>
               <select class="form-select shadow-none" name="rating">
-                <option value="5">Excellent</option>
-                <option value="4">Good</option>
-                <option value="3">Ok</option>
-                <option value="2">Poor</option>
-                <option value="1">Bad</option>
+                <option value="5"><?php echo t('bookings_excellent'); ?></option>
+                <option value="4"><?php echo t('bookings_good'); ?></option>
+                <option value="3"><?php echo t('bookings_ok'); ?></option>
+                <option value="2"><?php echo t('bookings_poor'); ?></option>
+                <option value="1"><?php echo t('bookings_bad'); ?></option>
               </select>
             </div>
             <div class="mb-4">
-              <label class="form-label">Review</label>
+              <label class="form-label"><?php echo t('bookings_review_lbl'); ?></label>
               <textarea name="review" rows="3" required class="form-control shadow-none"></textarea>
             </div>
             <input type="hidden" name="booking_id">
             <input type="hidden" name="room_id">
             <div class="text-end">
-              <button type="submit" class="btn custom-bg text-white shadow-none">SUBMIT</button>
+              <button type="submit" class="btn custom-bg text-white shadow-none"><?php echo t('bookings_submit'); ?></button>
             </div>
           </div>
         </form>
@@ -212,10 +211,9 @@
     </div>
   </div>
 
-
   <?php
-    if (isset($_GET['cancel_status']))  alert('success', 'Booking Cancelled!');
-    if (isset($_GET['review_status']))  alert('success', 'Thank you for rating & review!');
+    if (isset($_GET['cancel_status'])) alert('success', 'Booking Cancelled!');
+    if (isset($_GET['review_status'])) alert('success', 'Thank you for rating & review!');
   ?>
 
   <?php require('includes/user_footer.php'); ?>
@@ -223,22 +221,16 @@
   <script>
     let pendingCancelId = null;
 
-    // ── Show cancel preview modal ──────────────────────────────────────
     function show_cancel_preview(id) {
       pendingCancelId = id;
-
-      // Reset modal body
       document.getElementById('cancel-preview-body').innerHTML = `
         <div class="text-center py-3">
           <div class="spinner-border text-secondary" role="status"></div>
-          <p class="mt-2 text-muted small">Calculating refund...</p>
+          <p class="mt-2 text-muted small"><?php echo t('bookings_calc_refund'); ?></p>
         </div>`;
       document.getElementById('confirm-cancel-btn').disabled = true;
-
-      // Show modal
       new bootstrap.Modal(document.getElementById('cancelPreviewModal')).show();
 
-      // Fetch refund preview
       fetch('ajax/user_cancel_booking.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -248,56 +240,39 @@
       .then(text => {
         const raw = text.substring(text.indexOf('{'));
         const res = JSON.parse(raw);
-
         if (res.status !== 'success') {
-          document.getElementById('cancel-preview-body').innerHTML =
-            `<div class="alert alert-danger">${res.message}</div>`;
+          document.getElementById('cancel-preview-body').innerHTML = `<div class="alert alert-danger">${res.message}</div>`;
           return;
         }
-
-        // Color based on tier
         let tierColor  = res.tier === 'full' ? 'success' : (res.tier === 'partial' ? 'warning' : 'danger');
         let tierBorder = res.tier === 'full' ? 'border-success' : (res.tier === 'partial' ? 'border-warning' : 'border-danger');
-
         document.getElementById('cancel-preview-body').innerHTML = `
           <p class="mb-3">You are about to cancel your booking for <strong>${res.room_name}</strong>.</p>
-
           <div class="alert alert-${tierColor} border-start border-4 ${tierBorder} rounded-0 py-2">
-            <strong>Cancellation Policy Applied:</strong><br>
+            <strong><?php echo t('bookings_policy_title'); ?>:</strong><br>
             <span style="font-size:13px;">${res.policy_msg}</span>
           </div>
-
           <table class="table table-sm mt-3 mb-0">
-            <tr>
-              <td class="text-muted">Amount Paid</td>
-              <td class="fw-bold">₱${parseFloat(res.trans_amt).toLocaleString('en-PH', {minimumFractionDigits:2})}</td>
-            </tr>
-            <tr>
-              <td class="text-muted">Refund Amount</td>
-              <td class="fw-bold text-success">₱${parseFloat(res.refund_amt).toLocaleString('en-PH', {minimumFractionDigits:2})}</td>
-            </tr>
+            <tr><td class="text-muted"><?php echo t('bookings_paid'); ?></td>
+                <td class="fw-bold">₱${parseFloat(res.trans_amt).toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>
+            <tr><td class="text-muted"><?php echo t('bookings_refund_lbl'); ?></td>
+                <td class="fw-bold text-success">₱${parseFloat(res.refund_amt).toLocaleString('en-PH',{minimumFractionDigits:2})}</td></tr>
           </table>
-
           <p class="text-muted small mt-3 mb-0">
             <i class="bi bi-info-circle me-1"></i>
             Refund will be processed by our team and returned to your original payment method.
           </p>`;
-
         document.getElementById('confirm-cancel-btn').disabled = false;
       })
       .catch(() => {
-        document.getElementById('cancel-preview-body').innerHTML =
-          `<div class="alert alert-danger">Connection error. Please try again.</div>`;
+        document.getElementById('cancel-preview-body').innerHTML = `<div class="alert alert-danger">Connection error. Please try again.</div>`;
       });
     }
 
-    // ── Confirm cancellation ───────────────────────────────────────────
     document.getElementById('confirm-cancel-btn').addEventListener('click', function () {
       if (!pendingCancelId) return;
-
       this.disabled  = true;
       this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Cancelling...';
-
       fetch('ajax/user_cancel_booking.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -307,9 +282,7 @@
       .then(text => {
         const raw = text.substring(text.indexOf('{'));
         const res = JSON.parse(raw);
-
         bootstrap.Modal.getInstance(document.getElementById('cancelPreviewModal'))?.hide();
-
         if (res.status === 'success') {
           window.location.href = 'user_bookings.php?cancel_status=true';
         } else {
@@ -319,28 +292,21 @@
       .catch(() => alert('error', 'Connection error. Please try again.'));
     });
 
-
-    // ── Rate & Review ──────────────────────────────────────────────────
     let review_form = document.getElementById('review-form');
-
     function review_room(bid, rid) {
       review_form.elements['booking_id'].value = bid;
       review_form.elements['room_id'].value    = rid;
     }
-
     review_form.addEventListener('submit', function (e) {
       e.preventDefault();
-
       let data = new FormData();
       data.append('review_form', '');
-      data.append('rating',      review_form.elements['rating'].value);
-      data.append('review',      review_form.elements['review'].value);
-      data.append('booking_id',  review_form.elements['booking_id'].value);
-      data.append('room_id',     review_form.elements['room_id'].value);
-
+      data.append('rating',     review_form.elements['rating'].value);
+      data.append('review',     review_form.elements['review'].value);
+      data.append('booking_id', review_form.elements['booking_id'].value);
+      data.append('room_id',    review_form.elements['room_id'].value);
       let xhr = new XMLHttpRequest();
       xhr.open("POST", "ajax/user_review_room.php", true);
-
       xhr.onload = function () {
         if (this.responseText == 1) {
           window.location.href = 'user_bookings.php?review_status=true';
@@ -349,7 +315,6 @@
           alert('error', "Rating & Review Failed!");
         }
       };
-
       xhr.send(data);
     });
   </script>
