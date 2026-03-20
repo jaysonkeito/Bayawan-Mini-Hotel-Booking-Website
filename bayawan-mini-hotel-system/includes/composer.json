@@ -1,0 +1,22 @@
+{
+  "name": "bayawan/mini-hotel-system",
+  "description": "Bayawan Mini Hotel Booking System",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jayson P. Francisco",
+      "email": "jayson.f.bsinfotech@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "phpmailer/phpmailer": "^7.0",
+    "league/oauth2-google": "^4.2",
+    "mpdf/mpdf": "^8.3",
+    "phpoffice/phpspreadsheet": "^2.1"
+  },
+  "config": {
+    "vendor-dir": "vendor"
+  }
+}

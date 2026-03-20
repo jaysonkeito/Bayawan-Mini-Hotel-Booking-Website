@@ -1,0 +1,118 @@
+BAYAWAN-MINI-HOTEL-BOOKING-WEBSITE
+├── bayawan-mini-hotel-system/
+│   ├── .env
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── .htaccess
+│   │
+│   ├── config/
+│   │   ├── env.php
+│   │   ├── .htaccess
+│   │
+│   ├── admin/
+│   │   ├── admin_index.php
+│   │   ├── admin_dashboard.php
+│   │   ├── admin_booking_records.php
+│   │   ├── admin_new_bookings.php
+│   │   ├── admin_refund_bookings.php
+│   │   ├── admin_rooms.php
+│   │   ├── admin_features_facilities.php
+│   │   ├── admin_carousel.php
+│   │   ├── admin_rate_review.php
+│   │   ├── admin_user_queries.php
+│   │   ├── admin_users.php
+│   │   ├── admin_settings.php
+│   │   ├── admin_generate_pdf.php
+│   │   └── admin_logout.php
+│   │
+│   │   ├── ajax/
+│   │   │   ├── admin_booking_records.php
+│   │   │   ├── admin_carousel_crud.php
+│   │   │   ├── admin_dashboard.php
+│   │   │   ├── admin_features_facilities.php
+│   │   │   ├── admin_new_bookings.php
+│   │   │   ├── admin_refund_bookings.php
+│   │   │   ├── admin_rooms.php
+│   │   │   ├── admin_settings_crud.php
+│   │   │   └── admin_users.php
+│   │   │
+│   │   ├── css/
+│   │   │   └── admin_common.css
+│   │   │
+│   │   ├── includes/
+│   │   │   ├── mpdf
+│   │   │   ├── admin_configuration.php
+│   │   │   ├── admin_essentials.php
+│   │   │   ├── admin_header.php
+│   │   │   ├── admin_links.php
+│   │   │   └── admin_scripts.php
+│   │   │
+│   │   └── scripts/
+│   │       ├── admin_booking_records.js
+│   │       ├── admin_carousel.js
+│   │       ├── admin_dashboard.js
+│   │       ├── admin_features_facilities.js
+│   │       ├── admin_new_bookings.js
+│   │       ├── admin_refund_bookings.js
+│   │       ├── admin_rooms.js
+│   │       ├── admin_settings.js
+│   │       └── admin_users.js
+│   │
+│   ├── ajax/
+│   │   ├── user_cancel_booking.php
+│   │   ├── user_cart.php
+│   │   ├── user_confirm_booking.php
+│   │   ├── user_google_auth.php
+│   │   ├── user_google_callback.php
+│   │   ├── user_login_register.php
+│   │   ├── user_profile.php
+│   │   ├── user_review_room.php
+│   │   └── user_rooms.php
+│   │
+│   ├── css/
+│   │   └── user_common.css
+│   │
+│   ├── images/
+│   │   ├── about/
+│   │   ├── carousel/
+│   │   ├── facilities/
+│   │   ├── rooms/
+│   │   └── users/
+│   │
+│   ├── includes/
+│   │   ├── paymongo/
+│   │   │   ├── user_config_paymongo.php
+│   │   │   └── user_paymongo_helper.php
+│   │   ├── vendor/         (Composer autoload — PHPMailer, OAuth2-Google, mPDF)
+│   │   ├── user_complete_profile_modal.php
+│   │   ├── user_config_google.php
+│   │   ├── user_email_helper.php
+│   │   ├── user_footer.php
+│   │   ├── user_header.php
+│   │   ├── user_links.php
+│   │   ├── composer.json
+│   │   ├── composer.lock
+│   │
+│   ├── scripts/
+│   ├── user_login_register.js
+│   │   └── user_main.js
+│   │
+│   ├── user_index.php
+│   ├── user_home.php
+│   ├── user_about.php
+│   ├── user_rooms.php
+│   ├── user_room_details.php
+│   ├── user_facilities.php
+│   ├── user_confirm_booking.php
+│   ├── user_cart.php
+│   ├── user_pay_now.php
+│   ├── user_pay_response.php
+│   ├── user_pay_status.php
+│   ├── user_bookings.php
+│   ├── user_generate_pdf.php
+│   ├── user_profile.php
+│   ├── user_contact.php
+│   └── user_logout.php
+│
+└── database/
+    └── updated v1.sql

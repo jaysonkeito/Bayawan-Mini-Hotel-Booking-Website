@@ -1,0 +1,106 @@
+/* bayawan-mini-hotel-system/admin/css/admin_common.css */
+
+/* ─── Prevent layout flash on load ─── */
+body {
+  overflow-x: hidden;
+}
+:root {
+  --teal: #2ec1ac;
+  --teal_hover: #279e8c;
+}
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+.h-font {
+  font-family: 'Merienda', cursive;
+}
+
+/* ─── Remove number input arrows ─── */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ─── Custom teal button ─── */
+.custom-bg {
+  background-color: var(--teal);
+  border: 1px solid var(--teal);
+}
+.custom-bg:hover {
+  background-color: var(--teal_hover);
+  border-color: var(--teal_hover);
+}
+
+/* ─── Horizontal line divider ─── */
+.h-line {
+  width: 150px;
+  margin: 0 auto;
+  height: 1.7px;
+}
+
+/* ─── Alert notification position ─── */
+.custom-alert {
+  position: fixed;
+  top: 80px;
+  right: 25px;
+  z-index: 9999;
+}
+
+/* ─── Sidebar ─── */
+#dashboard-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+/* ─── Main content ─── */
+#main-content {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: block;
+  float: none;
+}
+
+#main-content.expanded {
+  margin-left: 65px;
+  width: calc(100% - 65px);
+}
+
+/* ─── Global scrollbar ─── */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(36, 36, 36);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ─── Responsive ─── */
+@media screen and (max-width: 991px) {
+  #dashboard-menu {
+    height: auto;
+    width: 100%;
+    position: relative;
+  }
+  #main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    margin-top: 0;
+  }
+}

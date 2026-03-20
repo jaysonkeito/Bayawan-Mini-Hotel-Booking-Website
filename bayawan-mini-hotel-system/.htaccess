@@ -1,0 +1,36 @@
+# ══════════════════════════════════════════════════════════════════════
+#  Bayawan Mini Hotel System — Root .htaccess
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Block direct access to .env ───────────────────────────────────────
+# Even though .env is not in the web root in a proper server setup,
+# this rule is a safety net for shared-hosting environments where the
+# project folder IS the document root.
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files ".env.example">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# ── Block direct access to the config/ directory ──────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Deny any direct HTTP request to config/
+    RewriteRule ^config(/.*)?$ - [F,L]
+</IfModule>
+
+# ── Fallback for servers that don't support mod_rewrite ───────────────
+<IfModule !mod_rewrite.c>
+    <FilesMatch "^(env\.php)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# ── Disable directory listing sitewide ───────────────────────────────
+Options -Indexes

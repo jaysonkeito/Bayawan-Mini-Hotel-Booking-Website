@@ -1,0 +1,4 @@
+# Deny all direct HTTP access to every file in this directory.
+# config/env.php is a PHP include — it must NEVER be served directly.
+Order allow,deny
+Deny from all
