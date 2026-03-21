@@ -1,7 +1,7 @@
 <?php
 //  bayawan-mini-hotel-system/user_pay_now.php
-require('admin/includes/configuration.php');
-require('admin/includes/essentials.php');
+require('admin/includes/admin_configuration.php');
+require('admin/includes/admin_essentials.php');
 require('includes/paymongo/user_config_paymongo.php');
 require('includes/paymongo/user_paymongo_helper.php');
 

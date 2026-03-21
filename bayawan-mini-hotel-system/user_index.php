@@ -301,7 +301,12 @@
     <div class="container">
         <div class="row">
         <div class="col-lg-8 col-md-8 p-4 mb-lg-0 mb-3 bg-white rounded">
-            <iframe class="w-100 rounded" height="320px" src="<?php echo $contact_r['iframe'] ?>" loading="lazy"></iframe>
+            <?php
+            // Extract just the src URL from the stored iframe HTML string
+            preg_match('/src="([^"]+)"/', $contact_r['iframe'], $iframe_match);
+            $iframe_src = $iframe_match[1] ?? '';
+            ?>
+            <iframe class="w-100 rounded" height="320px" src="<?php echo htmlspecialchars($iframe_src); ?>" loading="lazy"></iframe>
         </div>
         <div class="col-lg-4 col-md-4">
             <div class="bg-white p-4 rounded mb-4">

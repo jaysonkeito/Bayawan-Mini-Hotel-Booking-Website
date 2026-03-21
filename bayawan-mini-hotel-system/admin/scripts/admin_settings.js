@@ -107,7 +107,9 @@ function get_contacts() {
     document.getElementById('fb').innerText      = contacts_data.fb      ?? '';
     document.getElementById('insta').innerText   = contacts_data.insta   ?? '';
     document.getElementById('tw').innerText      = contacts_data.tw      ?? '';
-    document.getElementById('iframe').src        = contacts_data.iframe  ?? '';
+    const iframeHtml  = contacts_data.iframe ?? '';
+    const iframeSrc   = iframeHtml.match(/src="([^"]+)"/);
+    document.getElementById('iframe').src = iframeSrc ? iframeSrc[1] : '';
 
     // Populate edit modal inputs
     document.getElementById('address_inp').value = contacts_data.address ?? '';
