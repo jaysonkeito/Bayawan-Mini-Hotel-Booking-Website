@@ -83,4 +83,61 @@
       echo 0;
     }
   }
+
+  // ── Change Admin Password ─────────────────────────────────────────────
+  // ADDED: Handles password change from admin_settings.php.
+  // Verifies current password with password_verify(), then saves
+  // the new password hashed with password_hash() (bcrypt).
+  // ─────────────────────────────────────────────────────────────────────
+  if (isset($_POST['change_admin_pass']))
+  {
+    $current_pass = $_POST['current_pass'] ?? '';
+    $new_pass     = $_POST['new_pass']     ?? '';
+    $confirm_pass = $_POST['confirm_pass'] ?? '';
+
+    // Server-side: new and confirm must match
+    if ($new_pass !== $confirm_pass) {
+      echo 'mismatch';
+      exit;
+    }
+
+    // Minimum length check
+    if (strlen($new_pass) < 8) {
+      echo 'too_short';
+      exit;
+    }
+
+    // Fetch the current admin's record using the session ID
+    $res = select(
+      "SELECT * FROM `admin_cred` WHERE `sr_no` = ? LIMIT 1",
+      [$_SESSION['adminId']], 'i'
+    );
+
+    if ($res->num_rows !== 1) {
+      echo '0';
+      exit;
+    }
+
+    $row = mysqli_fetch_assoc($res);
+
+    // Verify current password against stored hash
+    if (!password_verify($current_pass, $row['admin_pass'])) {
+      echo 'wrong_pass';
+      exit;
+    }
+
+    // Prevent reusing the same password
+    if (password_verify($new_pass, $row['admin_pass'])) {
+      echo 'same_pass';
+      exit;
+    }
+
+    // Hash and save the new password
+    $new_hash = password_hash($new_pass, PASSWORD_BCRYPT);
+
+    echo update(
+      "UPDATE `admin_cred` SET `admin_pass` = ? WHERE `sr_no` = ?",
+      [$new_hash, $_SESSION['adminId']], 'si'
+    );
+  }
 ?>

@@ -112,6 +112,45 @@
             </div>
           </div>
 
+          <!-- ── Change Admin Password ── NEW SECTION ────────────────── -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="card-title m-0">
+                  <i class="bi bi-shield-lock me-2"></i>Change Admin Password
+                </h5>
+              </div>
+              <p class="text-muted small mb-3">
+                Your password is stored securely using bcrypt hashing. 
+                Enter your current password to set a new one.
+              </p>
+              <form id="change-pass-form" style="max-width: 480px;">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Current Password</label>
+                  <input type="password" name="current_pass" id="current_pass"
+                         class="form-control shadow-none" required
+                         placeholder="Enter your current password">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">New Password</label>
+                  <input type="password" name="new_pass" id="new_pass"
+                         class="form-control shadow-none" required
+                         placeholder="Min. 8 characters">
+                </div>
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Confirm New Password</label>
+                  <input type="password" name="confirm_pass" id="confirm_pass"
+                         class="form-control shadow-none" required
+                         placeholder="Re-enter new password">
+                </div>
+                <button type="submit" class="btn btn-dark shadow-none">
+                  <i class="bi bi-key me-1"></i> Update Password
+                </button>
+              </form>
+            </div>
+          </div>
+          <!-- ──────────────────────────────────────────────────────────── -->
+
         </div>
       </div>
     </div>
@@ -229,7 +268,53 @@
   </div>
 
   <?php require('includes/admin_scripts.php'); ?>
-  <script src="scripts/admin_settings.js"></script>
+  <script src="scripts/admin_settings.php"></script>
+
+  <!-- Change Password Script -->
+  <script>
+  document.getElementById('change-pass-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const current_pass = document.getElementById('current_pass').value;
+    const new_pass     = document.getElementById('new_pass').value;
+    const confirm_pass = document.getElementById('confirm_pass').value;
+
+    if (new_pass !== confirm_pass) {
+      alert('error', 'New passwords do not match!');
+      return;
+    }
+
+    if (new_pass.length < 8) {
+      alert('error', 'New password must be at least 8 characters!');
+      return;
+    }
+
+    const data = new FormData();
+    data.append('change_admin_pass', '');
+    data.append('current_pass',      current_pass);
+    data.append('new_pass',          new_pass);
+    data.append('confirm_pass',      confirm_pass);
+
+    fetch('ajax/admin_settings_crud.php', { method: 'POST', body: data })
+      .then(r => r.text())
+      .then(res => {
+        const resp = res.trim();
+        if (resp === '1') {
+          alert('success', 'Password updated successfully!');
+          document.getElementById('change-pass-form').reset();
+        } else if (resp === 'wrong_pass') {
+          alert('error', 'Current password is incorrect!');
+        } else if (resp === 'same_pass') {
+          alert('error', 'New password must be different from the current password!');
+        } else if (resp === 'mismatch') {
+          alert('error', 'New passwords do not match!');
+        } else {
+          alert('error', 'Password update failed. Please try again.');
+        }
+      })
+      .catch(() => alert('error', 'Connection error. Please try again.'));
+  });
+  </script>
 
 </body>
 </html>

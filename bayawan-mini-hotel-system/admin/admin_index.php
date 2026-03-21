@@ -50,7 +50,7 @@ if (isset($_SESSION['adminLogin']) && $_SESSION['adminLogin'] == true) {
 <?php
 if (isset($_POST['login'])) {
 
-    // ── Rate limit check ──────────────────────────────────────
+    // ── Rate limit check ──────────────────────────────────────────────
     $rl = session_rate_limit('admin_login');
 
     if (!$rl['allowed']) {
@@ -59,22 +59,38 @@ if (isset($_POST['login'])) {
     } else {
         $frm_data = filteration($_POST);
 
-        $query  = "SELECT * FROM `admin_cred` WHERE `admin_name`=? AND `admin_pass`=?";
-        $values = [$frm_data['admin_name'], $frm_data['admin_pass']];
-        $res    = select($query, $values, "ss");
+        // ── Fetch admin by username only, then verify password hash ──
+        // CHANGED: no longer comparing admin_pass in the query (plain-text).
+        // We fetch the row by username and use password_verify() on the hash.
+        $query = "SELECT * FROM `admin_cred` WHERE `admin_name` = ? LIMIT 1";
+        $res   = select($query, [$frm_data['admin_name']], "s");
 
         if ($res->num_rows == 1) {
-            // ── Success — reset rate limit ──
-            session_rate_reset('admin_login');
-
             $row = mysqli_fetch_assoc($res);
-            $_SESSION['adminLogin'] = true;
-            $_SESSION['adminId']    = $row['sr_no'];
-            $_SESSION['adminName']  = $row['admin_name'];
-            $_SESSION['adminRole']  = $row['admin_role'];
-            redirect('admin_dashboard.php');
 
+            // ── password_verify() compares submitted password against bcrypt hash ──
+            if (password_verify($frm_data['admin_pass'], $row['admin_pass'])) {
+
+                // ── Success — reset rate limit and start session ──
+                session_rate_reset('admin_login');
+
+                $_SESSION['adminLogin'] = true;
+                $_SESSION['adminId']    = $row['sr_no'];
+                $_SESSION['adminName']  = $row['admin_name'];
+                $_SESSION['adminRole']  = $row['admin_role'];
+                redirect('admin_dashboard.php');
+
+            } else {
+                // Wrong password
+                $left = $rl['attempts_left'] - 1;
+                if ($left > 0) {
+                    alert('error', "Login failed — Invalid Credentials! {$left} attempt(s) remaining.");
+                } else {
+                    alert('error', "Login failed — Account locked for " . format_retry_after(RATE_LOCKOUT_SECONDS) . ".");
+                }
+            }
         } else {
+            // Username not found — give same generic message to prevent username enumeration
             $left = $rl['attempts_left'] - 1;
             if ($left > 0) {
                 alert('error', "Login failed — Invalid Credentials! {$left} attempt(s) remaining.");
