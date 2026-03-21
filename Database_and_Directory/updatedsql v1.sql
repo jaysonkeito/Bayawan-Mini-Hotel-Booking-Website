@@ -139,7 +139,7 @@ CREATE TABLE `contact_details` (
   `fb`        VARCHAR(100)  NOT NULL DEFAULT '',
   `insta`     VARCHAR(100)  NOT NULL DEFAULT '',
   `tw`        VARCHAR(100)  NOT NULL DEFAULT '',
-  `iframe`    VARCHAR(300)  NOT NULL,
+  `iframe`    TEXT          NOT NULL,
   PRIMARY KEY (`sr_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
