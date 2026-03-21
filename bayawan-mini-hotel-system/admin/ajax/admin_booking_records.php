@@ -60,9 +60,12 @@
           </td>
           <td>
             <b>Room:</b> $data[room_name]<br>
-            <b>Price:</b> &#8369;$data[price]
+            <b>Price:</b> &#8369;$data[price]<br>
+            <b>Room No:</b> " . (!empty($data['room_no']) ? "<span class='badge' style='background:var(--teal);'>$data[room_no]</span>" : "<span class='text-muted'>Not assigned</span>") . "
           </td>
           <td>
+            <b>Check-in:</b> $checkin<br>
+            <b>Check-out:</b> $checkout<br>
             <b>Amount:</b> &#8369;$data[trans_amt]<br>
             <b>Date:</b> $date
           </td>
