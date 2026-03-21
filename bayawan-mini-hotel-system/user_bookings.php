@@ -67,49 +67,96 @@
           $status_bg = "";
           $btn       = "";
 
+          // ── BOOKED ────────────────────────────────────────────────────
           if ($data['booking_status'] == 'booked') {
             $status_bg = "bg-success";
+
             if ($data['arrival'] == 1) {
-              $lbl_pdf = t('bookings_dl_pdf');
-              $btn = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
-                        class='btn btn-dark btn-sm shadow-none'>$lbl_pdf</a>";
+              // ── Room assigned by admin — show room number to guest ────
+              $room_no = htmlspecialchars($data['room_no'] ?? '');
+
+              $room_assigned_block = "
+                <div class='alert border-0 py-2 px-3 mb-3' style='background:rgba(46,193,172,0.12);font-size:13px;'>
+                  <div class='d-flex align-items-center gap-2'>
+                    <i class='bi bi-door-open-fill fs-4' style='color:var(--teal);'></i>
+                    <div>
+                      <div class='fw-bold' style='font-size:16px;color:var(--teal);'>{$room_no}</div>
+                      <div class='text-muted' style='font-size:12px;'>Your assigned room number</div>
+                    </div>
+                    <span class='badge ms-auto' style='background:var(--teal);'>✓ Checked In</span>
+                  </div>
+                </div>
+              ";
+
+              $lbl_pdf  = t('bookings_dl_pdf');
+              $btn_area = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
+                              class='btn btn-dark btn-sm shadow-none'>
+                              <i class='bi bi-file-pdf me-1'></i>$lbl_pdf
+                           </a>";
+
               if ($data['rate_review'] == 0) {
                 $lbl_rate = t('bookings_rate');
-                $btn .= "<button type='button'
-                           onclick='review_room($data[booking_id], $data[room_id])'
-                           data-bs-toggle='modal' data-bs-target='#reviewModal'
-                           class='btn btn-dark btn-sm shadow-none ms-2'>
-                           $lbl_rate
-                         </button>";
+                $btn_area .= " <button type='button'
+                               onclick='review_room($data[booking_id], $data[room_id])'
+                               data-bs-toggle='modal' data-bs-target='#reviewModal'
+                               class='btn btn-dark btn-sm shadow-none ms-1'>
+                               <i class='bi bi-star me-1'></i>$lbl_rate
+                             </button>";
               }
+
+              $btn = $room_assigned_block . $btn_area;
+
             } else {
+              // ── Waiting for room assignment ───────────────────────────
               $lbl_cancel = t('bookings_cancel');
-              $btn = "<button onclick='show_cancel_preview($data[booking_id])'
-                        type='button'
-                        class='btn btn-danger btn-sm shadow-none'>
-                        $lbl_cancel
-                      </button>";
+
+              $pending_block = "
+                <div class='alert alert-warning border-0 py-2 px-3 mb-3' style='font-size:12px;'>
+                  <i class='bi bi-hourglass-split me-1'></i>
+                  Awaiting room assignment upon arrival at the hotel.
+                </div>
+              ";
+
+              $cancel_btn = "<button
+                              onclick='show_cancel_preview($data[booking_id])'
+                              type='button'
+                              class='btn btn-danger btn-sm shadow-none'>
+                              <i class='bi bi-x-circle me-1'></i>$lbl_cancel
+                            </button>";
+
+              $btn = $pending_block . $cancel_btn;
             }
+
+          // ── CANCELLED ─────────────────────────────────────────────────
           } elseif ($data['booking_status'] == 'cancelled') {
             $status_bg = "bg-danger";
+
             $refund_display = isset($data['refund_amt']) && $data['refund_amt'] !== null
               ? number_format($data['refund_amt'], 2)
               : number_format($data['trans_amt'], 2);
+
             $lbl_refund_proc = t('bookings_refund_proc');
             $lbl_refund      = t('bookings_refund_lbl');
+
             if ($data['refund'] == 0) {
               $btn = "<span class='badge bg-primary'>{$lbl_refund_proc}</span>
                       <br><small class='text-muted'>{$lbl_refund}: ₱{$refund_display}</small>";
             } else {
               $lbl_pdf = t('bookings_dl_pdf');
               $btn = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
-                        class='btn btn-dark btn-sm shadow-none'>$lbl_pdf</a>";
+                        class='btn btn-dark btn-sm shadow-none'>
+                        <i class='bi bi-file-pdf me-1'></i>$lbl_pdf
+                      </a>";
             }
+
+          // ── PAYMENT FAILED ────────────────────────────────────────────
           } else {
             $status_bg = "bg-warning";
             $lbl_pdf   = t('bookings_dl_pdf');
             $btn       = "<a href='user_generate_pdf.php?gen_pdf&id=$data[booking_id]'
-                            class='btn btn-dark btn-sm shadow-none'>$lbl_pdf</a>";
+                            class='btn btn-dark btn-sm shadow-none'>
+                            <i class='bi bi-file-pdf me-1'></i>$lbl_pdf
+                          </a>";
           }
 
           $no_show_lbl   = t('bookings_no_show');
@@ -117,31 +164,32 @@
             ? "<span class='badge bg-secondary ms-1'>$no_show_lbl</span>"
             : "";
 
-          $lbl_checkin  = t('bookings_checkin');
-          $lbl_checkout = t('bookings_checkout');
-          $lbl_paid     = t('bookings_paid');
-          $lbl_order    = t('bookings_order_id');
-          $lbl_date     = t('bookings_date');
+          $lbl_checkin   = t('bookings_checkin');
+          $lbl_checkout  = t('bookings_checkout');
+          $lbl_paid      = t('bookings_paid');
+          $lbl_order     = t('bookings_order_id');
+          $lbl_date      = t('bookings_date');
+          $lbl_per_night = t('room_per_night');
 
           echo <<<bookings
             <div class='col-md-4 px-4 mb-4'>
-              <div class='bg-white p-3 rounded shadow-sm'>
+              <div class='bg-white p-3 rounded shadow-sm h-100 d-flex flex-column'>
                 <h5 class='fw-bold'>$data[room_name]</h5>
-                <p>₱$data[price] {$lbl_date}</p>
-                <p>
+                <p class='mb-1'>₱$data[price] $lbl_per_night</p>
+                <p class='mb-1'>
                   <b>$lbl_checkin:</b> $checkin <br>
                   <b>$lbl_checkout:</b> $checkout
                 </p>
-                <p>
+                <p class='mb-2'>
                   <b>$lbl_paid:</b> ₱$data[trans_amt] <br>
                   <b>$lbl_order:</b> $data[order_id] <br>
                   <b>$lbl_date:</b> $date
                 </p>
-                <p>
+                <p class='mb-2'>
                   <span class='badge $status_bg'>$data[booking_status]</span>
                   $no_show_badge
                 </p>
-                $btn
+                <div class='mt-auto'>$btn</div>
               </div>
             </div>
           bookings;

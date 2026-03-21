@@ -1,7 +1,7 @@
 <?php
   // bayawan-mini-hotel-system/user_generate_pdf.php
-  require('admin/includes/essentials.php');
-  require('admin/includes/configuration.php');
+  require('admin/includes/admin_essentials.php');
+  require('admin/includes/admin_configuration.php');
   require('includes/vendor/autoload.php');
 
   session_start();
