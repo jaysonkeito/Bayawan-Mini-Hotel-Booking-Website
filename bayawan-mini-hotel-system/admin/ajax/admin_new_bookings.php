@@ -41,7 +41,6 @@ if (isset($_POST['get_bookings'])) {
         $checkin  = date("d-m-Y", strtotime($data['check_in']));
         $checkout = date("d-m-Y", strtotime($data['check_out']));
 
-        // Hours until check-in (for policy badge display)
         $checkin_dt  = new DateTime($data['check_in']);
         $hours_until = ($checkin_dt->getTimestamp() - $now->getTimestamp()) / 3600;
 
@@ -76,9 +75,8 @@ if (isset($_POST['get_bookings'])) {
               </td>
               <td>
                 <button type='button'
-                  onclick='assign_room({$data['booking_id']})'
-                  class='btn text-white btn-sm fw-bold custom-bg shadow-none mb-1'
-                  data-bs-toggle='modal' data-bs-target='#assign-room'>
+                  onclick='open_assign_modal({$data['booking_id']}, {$data['room_id']}, \"{$data['room_name']}\", \"{$data['check_in']}\", \"{$data['check_out']}\")'
+                  class='btn text-white btn-sm fw-bold custom-bg shadow-none mb-1'>
                   <i class='bi bi-check2-square'></i> Assign Room
                 </button><br>
                 <button type='button'
@@ -98,6 +96,60 @@ if (isset($_POST['get_bookings'])) {
     }
 
     echo $table_data;
+}
+
+
+// ─────────────────────────────────────────────────────────────
+//  GET AVAILABLE ROOMS
+//  Returns: { room_name, quantity, occupied: ["Room #1", ...] }
+//  "Occupied" = a room number already assigned to another active
+//  booking of the same room type whose dates overlap this booking.
+// ─────────────────────────────────────────────────────────────
+if (isset($_POST['get_available_rooms'])) {
+    $booking_id = (int) ($_POST['booking_id'] ?? 0);
+    $room_id    = (int) ($_POST['room_id']    ?? 0);
+    $check_in   = $_POST['check_in']  ?? '';
+    $check_out  = $_POST['check_out'] ?? '';
+
+    // 1. Get room name and quantity
+    $room_res  = select("SELECT `name`, `quantity` FROM `rooms` WHERE `id` = ? LIMIT 1", [$room_id], 'i');
+    $room_data = mysqli_fetch_assoc($room_res);
+
+    if (!$room_data) {
+        echo json_encode(['status' => 'error', 'message' => 'Room not found']);
+        exit;
+    }
+
+    // 2. Find which room numbers are already assigned to overlapping
+    //    confirmed bookings of the same room type (excluding this booking)
+    $occupied_q = "
+        SELECT bd.room_no
+        FROM `booking_order` bo
+        INNER JOIN `booking_details` bd ON bo.booking_id = bd.booking_id
+        WHERE bo.room_id        = ?
+          AND bo.booking_id    != ?
+          AND bo.booking_status = 'booked'
+          AND bo.arrival        = 1
+          AND bd.room_no       IS NOT NULL
+          AND bd.room_no       != ''
+          AND bo.check_in      < ?
+          AND bo.check_out     > ?
+    ";
+
+    $occupied_res  = select($occupied_q, [$room_id, $booking_id, $check_out, $check_in], 'iiss');
+    $occupied_list = [];
+
+    while ($row = mysqli_fetch_assoc($occupied_res)) {
+        $occupied_list[] = $row['room_no'];
+    }
+
+    echo json_encode([
+        'status'    => 'success',
+        'room_name' => $room_data['name'],
+        'quantity'  => (int) $room_data['quantity'],
+        'occupied'  => $occupied_list,
+    ]);
+    exit;
 }
 
 
@@ -135,7 +187,6 @@ if (isset($_POST['assign_room'])) {
 if (isset($_POST['cancel_booking'])) {
     $frm_data = filteration($_POST);
 
-    // Fetch booking details for email
     $email_q    = "SELECT bo.*, bd.*, uc.email, uc.name AS user_name
                    FROM `booking_order` bo
                    INNER JOIN `booking_details` bd ON bo.booking_id = bd.booking_id
@@ -143,7 +194,6 @@ if (isset($_POST['cancel_booking'])) {
                    WHERE bo.booking_id = ?";
     $email_data = mysqli_fetch_assoc(select($email_q, [$frm_data['booking_id']], 'i'));
 
-    // Admin cancellations always give full refund
     $refund_amt = $email_data ? (float) $email_data['trans_amt'] : 0;
 
     $res = update(
@@ -170,7 +220,6 @@ if (isset($_POST['cancel_booking'])) {
 if (isset($_POST['mark_no_show'])) {
     $frm_data = filteration($_POST);
 
-    // Fetch booking to get room price
     $fetch_q = "SELECT bo.*, bd.*, uc.email, uc.name AS user_name
                 FROM `booking_order` bo
                 INNER JOIN `booking_details` bd ON bo.booking_id = bd.booking_id
@@ -178,12 +227,8 @@ if (isset($_POST['mark_no_show'])) {
                 WHERE bo.booking_id = ?";
     $booking = mysqli_fetch_assoc(select($fetch_q, [$frm_data['booking_id']], 'i'));
 
-    if (!$booking) {
-        echo 0;
-        exit;
-    }
+    if (!$booking) { echo 0; exit; }
 
-    // No-show: first night forfeited = refund_amt of 0 (full amount kept)
     $refund_amt = 0;
 
     $res = update(

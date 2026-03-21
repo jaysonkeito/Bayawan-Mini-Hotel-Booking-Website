@@ -145,7 +145,7 @@ CREATE TABLE `contact_details` (
 
 -- Pre-insert one row since settings page expects sr_no=1
 INSERT INTO `contact_details` (`sr_no`, `address`, `gmap`, `pn1`, `pn2`, `email`, `fb`, `insta`, `tw`, `iframe`) VALUES
-(1, 'Poblacion, Bayawan City, Negros Oriental, Philippines, 6221', '', '09534559021', '09534559022', 'cebu.mini.hotel.cmh@gmail.com', '', '', '', '');
+(1, 'Bayawan City, Negros Oriental, Philippines, 6221', '', '09534559021', '09534559022', 'bayawanminihotel@gmail.com', '', '', '', '');
 
 -- =============================================
 -- 7. facilities
