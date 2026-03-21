@@ -268,7 +268,7 @@
   </div>
 
   <?php require('includes/admin_scripts.php'); ?>
-  <script src="scripts/admin_settings.php"></script>
+  <script src="scripts/admin_settings.js"></script>
 
   <!-- Change Password Script -->
   <script>
