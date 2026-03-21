@@ -135,6 +135,11 @@
     else alert('error', 'Please login to book room!');
   }
 
+  // Auto-dismiss PHP-rendered static alerts (e.g. contact form success)
+  document.querySelectorAll('.custom-alert').forEach(el => {
+      setTimeout(() => { if (el && el.parentNode) el.remove(); }, 3000);
+  });
+
   setActive();
 
 </script>
@@ -148,5 +153,7 @@
     logoutUrl:  'user_logout.php',
     checkEvery: 60,
   });
+
+  
 </script>
 <?php endif; ?>
