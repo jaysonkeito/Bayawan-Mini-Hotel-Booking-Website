@@ -1,4 +1,4 @@
-BAYAWAN-MINI-HOTEL-BOOKING-WEBSITE
+BAYAWAN-MINI-HOTEL-LARAVEL
 ├── bayawan-mini-hotel-system/
 │   ├── .env
 │   ├── .env.example
