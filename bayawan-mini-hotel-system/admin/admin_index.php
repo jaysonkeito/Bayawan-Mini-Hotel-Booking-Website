@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/admin/admin_index.php
-
 require('includes/admin_essentials.php');
 require('includes/admin_configuration.php');
 require_once('../includes/rate_limiter.php');

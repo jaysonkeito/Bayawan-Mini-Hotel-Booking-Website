@@ -1,5 +1,4 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_users.js */
-
 let current_search = '';
 let current_page   = 1;
 

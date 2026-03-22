@@ -1,5 +1,4 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_rooms.js */
-
 let current_rooms_page = 1;
 
 // ─── Add Room ─────────────────────────────────────────────────────────

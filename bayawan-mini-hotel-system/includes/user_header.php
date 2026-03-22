@@ -1,4 +1,5 @@
 <?php // bayawan-mini-hotel-system/includes/user_header.php
+
 require_once __DIR__ . '/lang.php';
 ?>
 <nav id="nav-bar" class="navbar navbar-expand-lg navbar-light bg-white px-lg-3 py-lg-2 shadow-sm sticky-top">

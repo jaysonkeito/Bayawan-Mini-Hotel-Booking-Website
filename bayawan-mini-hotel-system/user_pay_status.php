@@ -1,4 +1,5 @@
 <?php // bayawan-mini-hotel-system/user_pay_status.php ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/includes/user_email_helper.php
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;

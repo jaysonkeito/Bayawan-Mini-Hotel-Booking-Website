@@ -1,5 +1,6 @@
 <?php 
   // bayawan-mini-hotel-system/admin/ajax/admin_booking_records.php
+  
   require('../includes/admin_configuration.php');
   require('../includes/admin_essentials.php');
   date_default_timezone_set("Asia/Manila");

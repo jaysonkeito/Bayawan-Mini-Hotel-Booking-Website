@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_set_lang.php
+
 // ─────────────────────────────────────────────────────────────────────
 // Accepts:  POST { lang: 'en' | 'fil' }
 // Saves the chosen language to $_SESSION['lang'].

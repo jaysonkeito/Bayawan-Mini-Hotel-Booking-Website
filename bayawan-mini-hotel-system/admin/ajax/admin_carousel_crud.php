@@ -1,5 +1,6 @@
 <?php
   // bayawan-mini-hotel-system/admin/ajax/admin_carouse_crud.php
+  
   require('../includes/admin_essentials.php');
   require('../includes/admin_configuration.php');
   adminLogin();

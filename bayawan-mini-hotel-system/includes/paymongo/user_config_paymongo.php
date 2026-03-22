@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/includes/paymongo/user_config_paymongo.php
+
 // All PayMongo values (keys, environment, callback URLs) are now defined
 // in config/env.php and sourced from the .env file.
 //

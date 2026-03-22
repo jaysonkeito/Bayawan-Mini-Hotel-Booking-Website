@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_carousel.js */
+
 let carousel_s_form = document.getElementById('carousel_s_form');
 let carousel_picture_inp = document.getElementById('carousel_picture_inp');
 

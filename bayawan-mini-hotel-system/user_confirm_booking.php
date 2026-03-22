@@ -1,4 +1,5 @@
 <?php // bayawan-mini-hotel-system/user_confirm_booking.php ?>
+
 <!DOCTYPE html>
 <html lang="<?php echo $_SESSION['lang'] ?? 'en'; ?>">
 <head>

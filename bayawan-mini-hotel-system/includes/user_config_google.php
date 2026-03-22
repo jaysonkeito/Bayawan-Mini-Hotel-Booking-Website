@@ -1,6 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/includes/user_config_google.php
-//
+
 // All Google OAuth values (client ID, secret, redirect URI) are now
 // defined in config/env.php and sourced from the .env file.
 //

@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_features_facilities.js */
+
 let feature_s_form  = document.getElementById('feature_s_form');
 let facility_s_form = document.getElementById('facility_s_form');
 

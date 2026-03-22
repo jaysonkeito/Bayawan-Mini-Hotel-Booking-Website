@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/includes/user_complete_profile_modal.php
+
 // Drop-in include for the frontend user_header.php.
 // Renders a non-dismissible Bootstrap modal when $_SESSION['google_new'] is true.
 // The modal collects the four fields that Google OAuth cannot supply:

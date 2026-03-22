@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/scripts/session_timeout.js
+
  *
  * Usage:
  *   initSessionTimeout({

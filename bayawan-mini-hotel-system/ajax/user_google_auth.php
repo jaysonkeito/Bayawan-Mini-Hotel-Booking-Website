@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_google_auth.php
+
 session_start();
 require_once '../admin/includes/admin_essentials.php';
 require_once '../admin/includes/admin_configuration.php';

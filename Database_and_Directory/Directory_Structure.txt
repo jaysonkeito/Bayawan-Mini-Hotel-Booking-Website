@@ -127,4 +127,4 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │
 └── Database_and_Directory/
     ├── Directory_Structure.txt
-    └── updatedsql v1.sql
+    └── updatedsqlV1.sql

@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_settings.js */
+
 let general_data, contacts_data;
 
 let general_s_form     = document.getElementById('general_s_form');

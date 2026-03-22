@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_booking_records.js */
+
 function get_bookings(search='',page=1)
 {
   let xhr = new XMLHttpRequest();

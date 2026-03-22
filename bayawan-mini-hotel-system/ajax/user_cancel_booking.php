@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_cancel_booking.php
-
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
 require('../includes/user_email_helper.php');

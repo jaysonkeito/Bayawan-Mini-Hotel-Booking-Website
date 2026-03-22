@@ -1,4 +1,5 @@
-<!-- bayawan-mini-hotel-system/admin/includes/admin_header.php -->
+<?php // bayawan-mini-hotel-system/admin/includes/admin_header.php ?>
+
 <style>
   #dashboard-menu {
     width: 260px;

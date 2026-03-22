@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/admin/ajax/admin_refund_bookings.php
-
 require('../includes/admin_configuration.php');
 require('../includes/admin_essentials.php');
 require('../../includes/paymongo/user_config_paymongo.php');

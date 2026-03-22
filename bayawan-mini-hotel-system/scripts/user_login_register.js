@@ -1,4 +1,5 @@
 /*bayawan-mini-hotel-system/scripts/user_login_register.js */
+
 console.log("user_login_register.js → loaded");
 
 // ──────────────── Password Visibility Toggle ────────────────

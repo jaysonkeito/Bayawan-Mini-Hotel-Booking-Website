@@ -1,5 +1,4 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_reports.js */
-
 let current_date_from = '';
 let current_date_to   = '';
 

@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_cart.php
+
 // Handles all cart operations for multi-room booking.
 //
 // Cart structure in $_SESSION['cart']:

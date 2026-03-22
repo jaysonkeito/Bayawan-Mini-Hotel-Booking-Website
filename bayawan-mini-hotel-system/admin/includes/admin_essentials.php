@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/admin/includes/admin_essentials.php
+
 // All URL constants, filesystem paths, DB credentials, SMTP settings,
 // PayMongo keys, and Google OAuth values are now defined in config/env.php.
 // This file loads that single source of truth, then defines the helper

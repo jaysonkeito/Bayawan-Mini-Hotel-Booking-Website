@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/admin/ajax/admin_session_check.php
-
 require('../includes/admin_configuration.php');
 require('../includes/admin_essentials.php');
 

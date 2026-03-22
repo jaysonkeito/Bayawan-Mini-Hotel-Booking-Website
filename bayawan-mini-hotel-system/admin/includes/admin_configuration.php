@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/admin/includes/admin_configuration.php
+
 // Database connection and query helper functions.
 // Credentials are read from constants defined in config/env.php,
 // which in turn reads them from the .env file at the project root.

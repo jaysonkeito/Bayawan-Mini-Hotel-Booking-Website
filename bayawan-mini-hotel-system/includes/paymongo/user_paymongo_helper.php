@@ -1,6 +1,7 @@
 <?php
 /**
  * bayawan-mini-hotel-system/includes/paymongo/user_paymongo_helper.php
+ * 
  * PayMongo API helper functions.
  * Added: createPaymongoCartCheckout() for multi-room cart payments.
  * All existing functions are unchanged.

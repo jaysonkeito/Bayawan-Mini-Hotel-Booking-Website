@@ -1,5 +1,6 @@
 <?php
   // bayawan-mini-hotel-system/admin/admin_new_bookings.php
+  
   require('includes/admin_essentials.php');
   require('includes/admin_configuration.php');
   adminLogin();

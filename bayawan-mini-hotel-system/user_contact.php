@@ -1,5 +1,5 @@
 <?php
-// bayawan-mini-hotel-system/user_contact.php
+// bayawan-mini-hotel-system/user_contact.php   
 // ─────────────────────────────────────────────────────────────────────
 // DB config and form processing MUST come before any HTML output
 // so that header() redirects work correctly (PRG pattern).

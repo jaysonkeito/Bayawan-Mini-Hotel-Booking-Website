@@ -1,6 +1,5 @@
 <?php
 // config/env.php
-//
 // Central environment loader for Bayawan Mini Hotel System.
 // Reads .env from the project root, defines all constants once.
 // Every config file requires only this file — nothing else hardcodes a URL or secret.

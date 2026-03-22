@@ -1,5 +1,4 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_new_bookings.js */
-
 function get_bookings(search = '') {
   let xhr = new XMLHttpRequest();
   xhr.open("POST", "ajax/admin_new_bookings.php", true);

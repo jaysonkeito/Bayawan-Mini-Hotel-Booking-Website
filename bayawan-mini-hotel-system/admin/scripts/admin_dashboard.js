@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_dashboard.js */
+
 function booking_analytics(period=1) {
   let xhr = new XMLHttpRequest();
   xhr.open("POST","ajax/admin_dashboard.php",true);

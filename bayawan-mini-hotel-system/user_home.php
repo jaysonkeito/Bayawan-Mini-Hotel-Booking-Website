@@ -1,4 +1,5 @@
 <?php // bayawan-mini-hotel-system/user_home.php ?>
+
 <!-- Carousel – Fixed height + one slide visible -->
 <div class="container-fluid px-0 mt-4">
   <div class="swiper swiper-container" style="height: 500px; width: 100%; position: relative;">

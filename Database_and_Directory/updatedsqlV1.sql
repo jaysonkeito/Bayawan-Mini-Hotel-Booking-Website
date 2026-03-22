@@ -16,7 +16,7 @@ SET time_zone = "+08:00";
 -- =============================================
 -- Create / use database safely
 -- =============================================
-CREATE DATABASE IF NOT EXISTS `bmh_laravel` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS `bmh` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `bmh`;
 
 -- =============================================

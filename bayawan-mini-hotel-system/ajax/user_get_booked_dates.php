@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_get_booked_dates.php
-//
 // Returns all booked date ranges for a given room so the
 // Flatpickr calendar can disable and highlight them.
 

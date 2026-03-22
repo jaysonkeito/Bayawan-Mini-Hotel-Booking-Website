@@ -1,5 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/includes/lang.php
+
 // ─────────────────────────────────────────────────────────────────────
 // Central translation file.
 /* Usage anywhere:  <?php echo t('key'); ?> */

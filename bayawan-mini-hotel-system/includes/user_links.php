@@ -1,6 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/includes/user_links.php
-
 session_start();
 date_default_timezone_set("Asia/Manila");
 

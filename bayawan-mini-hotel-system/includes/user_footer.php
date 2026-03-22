@@ -1,4 +1,5 @@
-<!-- bayawan-mini-hotel-system/includes/user_footer.php -->
+<?php // bayawan-mini-hotel-system/includes/user_footer.php ?>
+
 <div class="container-fluid bg-white mt-5">
   <div class="row">
     <div class="col-lg-4 p-4">

@@ -1,6 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/includes/rate_limiter.php
-//
+
 // Provides two strategies:
 //   1. SESSION-based  — for login, OTP, registration (per browser session)
 //   2. DATABASE-based — for contact form (per IP, persists across sessions)
