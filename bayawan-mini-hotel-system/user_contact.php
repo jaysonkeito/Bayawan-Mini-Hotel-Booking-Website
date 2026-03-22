@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────
 
 // Load only what's needed before HTML output
+require('includes/user_links.php');
 require_once('config/env.php');
 
 // Direct DB connection (avoids redeclare conflict with user_links.php)
@@ -48,7 +49,6 @@ if (isset($_POST['send'])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php require('includes/user_links.php'); ?>
     <title><?php echo $settings_r['site_title'] ?> - CONTACT</title>
 </head>
 <body class="bg-light">
