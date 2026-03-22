@@ -59,6 +59,8 @@ CREATE TABLE `user_cred` (
   `last_login`        DATETIME        DEFAULT NULL,
   `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `reset_token`       VARCHAR(64)     NULL,
+  `reset_expires`     DATETIME        NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_email` (`email`),
   INDEX `idx_email` (`email`),

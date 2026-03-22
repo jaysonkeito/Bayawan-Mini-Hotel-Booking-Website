@@ -1,11 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/admin/includes/admin_essentials.php
 
-// All URL constants, filesystem paths, DB credentials, SMTP settings,
-// PayMongo keys, and Google OAuth values are now defined in config/env.php.
-// This file loads that single source of truth, then defines the helper
-// functions that the rest of the admin panel relies on.
-
 require_once __DIR__ . '/../../config/env.php';
 
 
@@ -17,7 +12,6 @@ function adminLogin() {
         echo "<script>window.location.href='admin_index.php';</script>";
         exit;
     }
-    // Update last activity timestamp on every authenticated page load
     $_SESSION['last_activity'] = time();
 }
 
@@ -55,10 +49,20 @@ function alert(string $type, string $msg) {
 
 // ── Image upload / delete helpers ────────────────────────────────────
 
+/**
+ * Upload a raster image (JPEG/PNG/WebP) for rooms, carousel, facilities, etc.
+ *
+ * FIX (Bug): Uses finfo_file() to inspect actual file magic bytes instead of
+ * trusting $_FILES['type'], which is supplied by the browser and can be spoofed.
+ */
 function uploadImage(array $image, string $folder): string {
-    $valid_mime = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!in_array($image['type'], $valid_mime))        return 'inv_img';
-    if (($image['size'] / (1024 * 1024)) > 2)          return 'inv_size';
+    // Check actual file content, not the browser-supplied MIME type
+    $finfo       = new finfo(FILEINFO_MIME_TYPE);
+    $actual_mime = $finfo->file($image['tmp_name']);
+    $valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!in_array($actual_mime, $valid_mime)) return 'inv_img';
+    if (($image['size'] / (1024 * 1024)) > 2)  return 'inv_size';
 
     $ext   = pathinfo($image['name'], PATHINFO_EXTENSION);
     $rname = 'IMG_' . random_int(11111, 99999) . '.' . $ext;
@@ -72,30 +76,68 @@ function deleteImage(string $image, string $folder): bool {
     return file_exists($full) && unlink($full);
 }
 
+/**
+ * Upload an SVG image (for facility icons).
+ *
+ * FIX (Warning): After MIME and size checks, the SVG content is sanitized
+ * by stripping <script> blocks and inline event handlers (onclick, onload, etc.)
+ * before saving — preventing stored XSS via malicious SVG payloads.
+ */
 function uploadSVGImage(array $image, string $folder): string {
-    if ($image['type'] !== 'image/svg+xml')    return 'inv_img';
+    // Verify actual MIME — do not trust browser-supplied type
+    $finfo       = new finfo(FILEINFO_MIME_TYPE);
+    $actual_mime = $finfo->file($image['tmp_name']);
+
+    if ($actual_mime !== 'image/svg+xml')      return 'inv_img';
     if (($image['size'] / (1024 * 1024)) > 1)  return 'inv_size';
+
+    // Read SVG content and sanitize before saving
+    $svg_content = file_get_contents($image['tmp_name']);
+    if ($svg_content === false) return 'upd_failed';
+
+    // Strip <script>...</script> blocks (case-insensitive, handles multi-line)
+    $svg_content = preg_replace('/<script[\s\S]*?<\/script>/i', '', $svg_content);
+
+    // Neutralize inline event handlers (onclick, onload, onerror, etc.)
+    $svg_content = preg_replace('/\bon\w+\s*=/i', 'data-removed=', $svg_content);
+
+    // Remove javascript: URI schemes in href/xlink:href attributes
+    $svg_content = preg_replace('/\bhref\s*=\s*["\']?\s*javascript:/i', 'href="', $svg_content);
 
     $ext   = pathinfo($image['name'], PATHINFO_EXTENSION);
     $rname = 'IMG_' . random_int(11111, 99999) . '.' . $ext;
     $path  = UPLOAD_IMAGE_PATH . $folder . $rname;
 
-    return move_uploaded_file($image['tmp_name'], $path) ? $rname : 'upd_failed';
+    return (file_put_contents($path, $svg_content) !== false) ? $rname : 'upd_failed';
 }
 
+/**
+ * Upload and re-encode a user profile picture.
+ *
+ * FIX (Bug): Uses finfo_file() instead of $_FILES['type'] for MIME detection,
+ * then re-encodes via GD — so even a disguised file gets converted to a
+ * clean JPEG, eliminating any embedded PHP/HTML in the original file.
+ */
 function uploadUserImage(array $image): string {
-    $valid_mime = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!in_array($image['type'], $valid_mime)) return 'inv_img';
+    // Check actual file content
+    $finfo       = new finfo(FILEINFO_MIME_TYPE);
+    $actual_mime = $finfo->file($image['tmp_name']);
+    $valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!in_array($actual_mime, $valid_mime)) return 'inv_img';
 
     $ext   = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
     $rname = 'IMG_' . random_int(11111, 99999) . '.jpeg';
     $path  = UPLOAD_IMAGE_PATH . USERS_FOLDER . $rname;
 
-    $img = match ($ext) {
-        'png'  => imagecreatefrompng($image['tmp_name']),
-        'webp' => imagecreatefromwebp($image['tmp_name']),
-        default => imagecreatefromjpeg($image['tmp_name']),
+    // GD re-encoding strips any non-image content from the file
+    $img = match ($actual_mime) {
+        'image/png'  => imagecreatefrompng($image['tmp_name']),
+        'image/webp' => imagecreatefromwebp($image['tmp_name']),
+        default      => imagecreatefromjpeg($image['tmp_name']),
     };
+
+    if (!$img) return 'inv_img';
 
     return imagejpeg($img, $path, 75) ? $rname : 'upd_failed';
 }

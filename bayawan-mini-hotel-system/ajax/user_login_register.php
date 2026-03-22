@@ -10,6 +10,37 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 header('Content-Type: text/plain; charset=utf-8');
 
+// ─────────────────────────────────────────────────────────────
+//  CSRF TOKEN HELPER
+//  Generate once per session; validate on every mutating action.
+// ─────────────────────────────────────────────────────────────
+function ensure_csrf_token(): string {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function verify_csrf(): void {
+    $token = $_POST['csrf_token'] ?? '';
+    if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+        http_response_code(403);
+        exit('Invalid request token. Please refresh the page and try again.');
+    }
+}
+
+// Ensure the token exists in session on every request (so the JS can read it)
+ensure_csrf_token();
+
+// ─────────────────────────────────────────────────────────────
+//  SPECIAL CASE: get_csrf_token  (no POST body needed)
+// ─────────────────────────────────────────────────────────────
+$action = $_POST['action'] ?? '';
+
+if ($action === 'get_csrf_token') {
+    exit($_SESSION['csrf_token']);
+}
+
 function sendEmail($to, $subject, $body) {
     $mail = new PHPMailer(true);
     try {
@@ -34,14 +65,14 @@ function sendEmail($to, $subject, $body) {
     }
 }
 
-$action = $_POST['action'] ?? '';
-
 switch ($action) {
 
 // ─────────────────────────────────────────────────────────────
 //  LOGIN
 // ─────────────────────────────────────────────────────────────
 case 'login':
+    verify_csrf();
+
     $rl = session_rate_limit('user_login');
     if (!$rl['allowed']) {
         exit("Too many failed attempts. Please wait " . format_retry_after($rl['retry_after']) . " before trying again.");
@@ -82,7 +113,12 @@ case 'login':
                 setcookie('remember_token', $token, time()+2592000, '/', '', true, true);
             }
 
-            $conn->query("UPDATE user_cred SET last_login = NOW() WHERE id = {$row['id']}");
+            // FIX (Critical): Use a prepared statement instead of raw string interpolation
+            $upd_login = $conn->prepare("UPDATE user_cred SET last_login = NOW() WHERE id = ?");
+            $upd_login->bind_param("i", $row['id']);
+            $upd_login->execute();
+            $upd_login->close();
+
             exit("success");
         } else {
             $left = $rl['attempts_left'] - 1;
@@ -99,6 +135,8 @@ case 'login':
 //  SEND OTP (REGISTER)
 // ─────────────────────────────────────────────────────────────
 case 'send_otp_register':
+    verify_csrf();
+
     $rl = session_rate_limit('register');
     if (!$rl['allowed']) {
         exit("Too many registration attempts. Please wait " . format_retry_after($rl['retry_after']) . " before trying again.");
@@ -141,6 +179,8 @@ case 'send_otp_register':
 //  VERIFY OTP
 // ─────────────────────────────────────────────────────────────
 case 'verify_otp_register':
+    verify_csrf();
+
     $rl = session_rate_limit('otp');
     if (!$rl['allowed']) {
         exit("Too many incorrect attempts. Please wait " . format_retry_after($rl['retry_after']) . " before trying again.");
@@ -154,7 +194,8 @@ case 'verify_otp_register':
         die("Code expired or invalid session");
     }
 
-    if ($otp == $_SESSION['reg_otp']) {
+    // FIX (Warning): Use strict string comparison to prevent PHP type-coercion bypasses
+    if ($otp === (string)$_SESSION['reg_otp']) {
         session_rate_reset('otp');
         echo "OTP verified";
     } else {
@@ -169,7 +210,8 @@ case 'verify_otp_register':
 //  COMPLETE REGISTER
 // ─────────────────────────────────────────────────────────────
 case 'complete_register':
-    // Registration form submission also rate limited
+    verify_csrf();
+
     $rl = session_rate_limit('register_submit');
     if (!$rl['allowed']) {
         exit("Too many registration attempts. Please wait " . format_retry_after($rl['retry_after']) . " before trying again.");
@@ -208,10 +250,14 @@ case 'complete_register':
 
         if (!is_dir($target_dir)) mkdir($target_dir, 0755, true);
 
-        $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+        // FIX (Bug): Use finfo to check actual file content, not browser-supplied type
+        $finfo        = new finfo(FILEINFO_MIME_TYPE);
+        $actual_mime  = $finfo->file($file['tmp_name']);
+        $allowed_mime = ['image/jpeg', 'image/png', 'image/webp'];
+        $ext          = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed_ext  = ['jpg', 'jpeg', 'png', 'webp'];
 
-        if (in_array($ext, $allowed)) {
+        if (in_array($actual_mime, $allowed_mime) && in_array($ext, $allowed_ext)) {
             $picture     = 'USR_' . time() . '_' . uniqid() . '.' . $ext;
             $target_file = $target_dir . '/' . $picture;
             if (!move_uploaded_file($file['tmp_name'], $target_file)) {
@@ -229,7 +275,6 @@ case 'complete_register':
     $stmt->bind_param("ssssssss", $name, $email, $phone, $hash, $address, $pincode, $dob, $picture);
 
     if ($stmt->execute()) {
-        // Reset all registration rate limits on success
         session_rate_reset('register');
         session_rate_reset('register_submit');
         session_rate_reset('otp');
@@ -246,15 +291,23 @@ case 'complete_register':
 
 // ─────────────────────────────────────────────────────────────
 //  RECOVER PASSWORD
+//  FIX (Critical): Now uses dedicated reset_token + reset_expires
+//  columns instead of remember_token, and enforces expiry.
 // ─────────────────────────────────────────────────────────────
 case 'recover_password':
+    verify_csrf();
+
     $email = trim($_POST['email'] ?? '');
     $token = trim($_POST['token'] ?? '');
     $pass  = trim($_POST['pass']  ?? '');
 
     if (empty($email) || empty($token) || empty($pass)) exit("failed");
 
-    $stmt = $conn->prepare("SELECT id FROM user_cred WHERE email = ? AND remember_token = ? LIMIT 1");
+    // Check dedicated reset columns and enforce expiry
+    $stmt = $conn->prepare(
+        "SELECT id FROM user_cred
+         WHERE email = ? AND reset_token = ? AND reset_expires > NOW() LIMIT 1"
+    );
     $stmt->bind_param("ss", $email, $token);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -264,7 +317,10 @@ case 'recover_password':
     $row      = $res->fetch_assoc();
     $new_hash = password_hash($pass, PASSWORD_DEFAULT);
 
-    $upd = $conn->prepare("UPDATE user_cred SET password = ?, remember_token = NULL, remember_expires = NULL WHERE id = ?");
+    // Clear the reset token after use — one-time tokens
+    $upd = $conn->prepare(
+        "UPDATE user_cred SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?"
+    );
     $upd->bind_param("si", $new_hash, $row['id']);
 
     echo $upd->execute() ? "success" : "failed";
@@ -273,8 +329,12 @@ case 'recover_password':
 
 // ─────────────────────────────────────────────────────────────
 //  FORGOT PASSWORD
+//  FIX (Critical): Now writes to reset_token + reset_expires
+//  so it no longer clobbers the Remember Me session.
 // ─────────────────────────────────────────────────────────────
 case 'forgot_pass':
+    verify_csrf();
+
     $email = trim($_POST['email'] ?? '');
 
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) exit("inv_email");
@@ -293,7 +353,10 @@ case 'forgot_pass':
     $token   = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-    $upd = $conn->prepare("UPDATE user_cred SET remember_token = ?, remember_expires = ? WHERE id = ?");
+    // Write to dedicated reset columns — does NOT touch remember_token
+    $upd = $conn->prepare(
+        "UPDATE user_cred SET reset_token = ?, reset_expires = ? WHERE id = ?"
+    );
     $upd->bind_param("ssi", $token, $expires, $row['id']);
     $upd->execute();
 

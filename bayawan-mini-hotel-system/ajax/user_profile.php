@@ -12,13 +12,25 @@ if (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) {
     exit;
 }
 
+// ─────────────────────────────────────────────────────────────
+//  CSRF VALIDATION
+//  Every mutating POST in this file is verified against the
+//  session token generated in user_login_register.php.
+// ─────────────────────────────────────────────────────────────
+function verify_csrf(): void {
+    $token = $_POST['csrf_token'] ?? '';
+    if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+        http_response_code(403);
+        exit('Invalid request token. Please refresh the page and try again.');
+    }
+}
+
 
 // ─────────────────────────────────────────────────────────────
-//  Complete Google Profile (Fix 3)
-//  Saves the four fields Google OAuth cannot supply, then clears
-//  the $_SESSION['google_new'] flag so the modal never shows again.
+//  Complete Google Profile
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['complete_google_profile'])) {
+    verify_csrf();
     $frm_data = filteration($_POST);
 
     $phone   = trim($frm_data['phonenum'] ?? '');
@@ -40,9 +52,11 @@ if (isset($_POST['complete_google_profile'])) {
         exit;
     }
 
-    $dob_ts = strtotime($dob);
-    if (!$dob_ts || $dob_ts >= strtotime('-1 year')) {
-        echo 'Please enter a valid date of birth.';
+    // FIX (Bug): Reject future dates AND enforce minimum age of 18 years
+    $dob_ts  = strtotime($dob);
+    $min_age = strtotime('-18 years');
+    if (!$dob_ts || $dob_ts > time() || $dob_ts > $min_age) {
+        echo 'Please enter a valid date of birth (must be 18 years or older).';
         exit;
     }
 
@@ -65,6 +79,7 @@ if (isset($_POST['complete_google_profile'])) {
 //  Basic Information Update
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['info_form'])) {
+    verify_csrf();
     $frm_data = filteration($_POST);
 
     $u_exist = select(
@@ -104,6 +119,8 @@ if (isset($_POST['info_form'])) {
 //  Profile Picture Update
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['profile_form'])) {
+    verify_csrf();
+
     $img = uploadUserImage($_FILES['profile']);
 
     if ($img === 'inv_img') {
@@ -137,49 +154,19 @@ if (isset($_POST['profile_form'])) {
 
 
 // ─────────────────────────────────────────────────────────────
-//  Password Update  ← FIXED
-//
-//  Changes from the original:
-//  1. Requires and verifies the current password before allowing
-//     a change — prevents any logged-in session from silently
-//     overwriting the password without knowing it.
-//  2. Reads all three password values directly from raw $_POST
-//     instead of through filteration(). filteration() calls
-//     htmlspecialchars() which corrupts passwords containing
-//     &, <, >, ", or ' — the raw value is needed both for
-//     password_verify() to work correctly and to ensure the
-//     newly hashed password matches what the user types at login.
-//  3. Prevents re-using the same password.
+//  Password Update
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['pass_form'])) {
+    verify_csrf();
 
-    // Read passwords from raw $_POST — NOT through filteration()
-    // Reason: filteration() calls htmlspecialchars() which would
-    // mangle special characters (e.g. "P@ss&word" → "P@ss&amp;word")
-    // before hashing, making the stored hash unmatchable at login.
     $current_pass = $_POST['current_pass'] ?? '';
     $new_pass     = $_POST['new_pass']     ?? '';
     $confirm_pass = $_POST['confirm_pass'] ?? '';
 
-    // 1. Current password must be provided
-    if (empty($current_pass)) {
-        echo 'current_required';
-        exit;
-    }
+    if (empty($current_pass)) { echo 'current_required'; exit; }
+    if ($new_pass !== $confirm_pass) { echo 'mismatch'; exit; }
+    if (empty($new_pass)) { echo 'empty_pass'; exit; }
 
-    // 2. New and confirm must match
-    if ($new_pass !== $confirm_pass) {
-        echo 'mismatch';
-        exit;
-    }
-
-    // 3. New password must not be empty
-    if (empty($new_pass)) {
-        echo 'empty_pass';
-        exit;
-    }
-
-    // 4. Fetch stored hash and verify current password
     $user_q    = select(
         "SELECT `password` FROM `user_cred` WHERE `id` = ? LIMIT 1",
         [$_SESSION['uId']], 'i'
@@ -191,13 +178,11 @@ if (isset($_POST['pass_form'])) {
         exit;
     }
 
-    // 5. Prevent reusing the same password
     if (password_verify($new_pass, $user_data['password'])) {
         echo 'same_pass';
         exit;
     }
 
-    // 6. Hash and save the new password
     $enc_pass = password_hash($new_pass, PASSWORD_DEFAULT);
     $query    = "UPDATE `user_cred` SET `password` = ? WHERE `id` = ? LIMIT 1";
 

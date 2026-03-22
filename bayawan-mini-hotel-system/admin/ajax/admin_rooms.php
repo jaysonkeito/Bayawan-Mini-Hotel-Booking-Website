@@ -40,8 +40,11 @@ function build_rooms_pagination($total_rows, $page) {
 
 // ─── ADD ROOM ─────────────────────────────────────────────────────────
 if (isset($_POST['add_room'])) {
-    $features   = filteration(json_decode($_POST['features']));
-    $facilities = filteration(json_decode($_POST['facilities']));
+    // FIX (Bug): json_decode() returns an array of integers (IDs).
+    // filteration() expects an associative string array and would mangle
+    // integer IDs via htmlspecialchars(). Cast to int[] directly instead.
+    $features   = array_map('intval', (array) json_decode($_POST['features']   ?? '[]'));
+    $facilities = array_map('intval', (array) json_decode($_POST['facilities'] ?? '[]'));
     $frm_data   = filteration($_POST);
     $flag = 0;
 
@@ -152,8 +155,9 @@ if (isset($_POST['get_room'])) {
 
 // ─── EDIT ROOM ────────────────────────────────────────────────────────
 if (isset($_POST['edit_room'])) {
-    $features   = filteration(json_decode($_POST['features']));
-    $facilities = filteration(json_decode($_POST['facilities']));
+    // FIX (Bug): Same as add_room — cast JSON decoded IDs to int[], not filteration()
+    $features   = array_map('intval', (array) json_decode($_POST['features']   ?? '[]'));
+    $facilities = array_map('intval', (array) json_decode($_POST['facilities'] ?? '[]'));
     $frm_data   = filteration($_POST);
     $flag = 0;
 
