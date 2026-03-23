@@ -18,6 +18,7 @@ function csrf_token_field(): string {
 function csrf_verify(): void {
     $expected  = csrf_token();
     $submitted = $_POST['csrf_token']
+              ?? $_GET['csrf_token']
               ?? $_SERVER['HTTP_X_CSRF_TOKEN']
               ?? '';
 

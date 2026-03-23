@@ -399,11 +399,27 @@ require_once __DIR__ . '/csrf.php';
     var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     if (!csrfToken) return;
     var _send = XMLHttpRequest.prototype.send;
+    var _open = XMLHttpRequest.prototype.open;
+    var _currentUrl = '';
+
+    // Capture the URL on open so we can append token to GET requests
+    XMLHttpRequest.prototype.open = function(method, url) {
+        _currentUrl = url;
+        _open.apply(this, arguments);
+    };
+
     XMLHttpRequest.prototype.send = function (body) {
         if (body instanceof FormData) {
+            // POST with FormData
             body.append('csrf_token', csrfToken);
         } else if (typeof body === 'string' && body.length > 0) {
+            // POST with URL-encoded string
             body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
+        } else if (!body) {
+            // GET request — token goes in the URL
+            var sep = _currentUrl.indexOf('?') === -1 ? '?' : '&';
+            _currentUrl = _currentUrl + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
+            _open.call(this, 'GET', _currentUrl, true);
         }
         _send.call(this, body);
     };
