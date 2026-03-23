@@ -241,6 +241,16 @@ require_once __DIR__ . '/../../includes/csrf.php';
             <span class="menu-text">Booking Records</span>
           </a>
           <?php } ?>
+          <?php if(isAdmin()){ ?>
+          <a class="nav-link" href="admin_booking_records.php">
+            <i class="bi bi-journal-text"></i>
+            <span class="menu-text">Booking Records</span>
+          </a>
+          <a class="nav-link" href="admin_calendar.php">
+            <i class="bi bi-calendar3"></i>
+            <span class="menu-text">Booking Calendar</span>
+          </a>
+          <?php } ?>
         </div>
       </li>
 
@@ -295,6 +305,14 @@ require_once __DIR__ . '/../../includes/csrf.php';
         </a>
       </li>
       <?php } ?>
+
+      <!-- 2FA Settings — both roles -->
+      <li class="nav-item">
+        <a class="nav-link" href="admin_2fa_setup.php">
+          <i class="bi bi-shield-lock"></i>
+          <span class="menu-text">2FA Setup</span>
+        </a>
+      </li>
 
       <!-- Logout — both roles -->
       <li class="nav-item mt-3 border-top border-secondary pt-3">

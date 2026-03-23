@@ -14,7 +14,9 @@
     "phpmailer/phpmailer": "^7.0",
     "league/oauth2-google": "^4.2",
     "mpdf/mpdf": "^8.3",
-    "phpoffice/phpspreadsheet": "^2.1"
+    "phpoffice/phpspreadsheet": "^2.1",
+    "robthree/twofactorauth": "^3.0",
+    "endroid/qr-code": "4.0"
   },
   "config": {
     "vendor-dir": "vendor"

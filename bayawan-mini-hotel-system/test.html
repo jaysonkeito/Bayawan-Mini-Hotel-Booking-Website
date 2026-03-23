@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayawan Mini Hotel — Full Code Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --dark: #0f0e0c;
+    --dark2: #1a1916;
+    --dark3: #242320;
+    --cream: #f5f0e8;
+    --cream2: #ebe4d6;
+    --red: #d64045;
+    --orange: #e07a2f;
+    --green: #4a9e6b;
+    --blue: #3b7dd8;
+    --text: #c8bfae;
+    --text-dim: #7a7060;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--dark2);
+    border-bottom: 1px solid #2e2b25;
+    padding: 48px 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hotel-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 900;
+    color: var(--cream);
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  h1 span { color: var(--gold); }
+  .meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* ── Layout ── */
+  .wrapper { max-width: 1080px; margin: 0 auto; padding: 0 40px 80px; }
+
+  /* ── Score card ── */
+  .scores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 48px 0 56px;
+  }
+  .score-card {
+    background: var(--dark2);
+    border: 1px solid #2a2720;
+    border-radius: 8px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .score-card .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .score-card .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .score-good  { color: var(--green); }
+  .score-warn  { color: var(--orange); }
+  .score-crit  { color: var(--red); }
+  .score-info  { color: var(--blue); }
+
+  /* ── Sections ── */
+  section { margin-bottom: 60px; }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 .icon { font-size: 20px; }
+  .section-divider {
+    border: none;
+    border-top: 1px solid #2a2720;
+    margin: 10px 0 28px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--cream);
+    margin: 28px 0 8px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Finding cards ── */
+  .finding {
+    background: var(--dark2);
+    border: 1px solid #2a2720;
+    border-left: 3px solid var(--gold);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+  }
+  .finding.critical { border-left-color: var(--red); }
+  .finding.warning  { border-left-color: var(--orange); }
+  .finding.good     { border-left-color: var(--green); }
+  .finding.info     { border-left-color: var(--blue); }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+  }
+  .badge.critical { background: rgba(214,64,69,0.18); color: var(--red); }
+  .badge.warning  { background: rgba(224,122,47,0.18); color: var(--orange); }
+  .badge.good     { background: rgba(74,158,107,0.18); color: var(--green); }
+  .badge.info     { background: rgba(59,125,216,0.18); color: var(--blue); }
+
+  .finding-title {
+    font-weight: 500;
+    color: var(--cream);
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+  .finding p {
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .finding p:last-child { margin-bottom: 0; }
+
+  /* ── Code blocks ── */
+  pre, code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+  }
+  pre {
+    background: #0a0908;
+    border: 1px solid #222018;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    overflow-x: auto;
+    color: #b8b09a;
+    line-height: 1.6;
+  }
+  code { color: var(--gold-light); }
+  .c-comment { color: #4a4538; }
+  .c-key     { color: #d67c4a; }
+  .c-str     { color: #85b87a; }
+  .c-fix     { color: #79bfa1; }
+
+  /* ── Feature table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #2a2720;
+  }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #1e1c18;
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--cream); font-weight: 500; }
+  .priority-high   { color: var(--red); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .priority-med    { color: var(--orange); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .priority-low    { color: var(--green); font-family: 'DM Mono', monospace; font-size: 11px; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid #2a2720;
+    padding: 32px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  footer span { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hotel-tag">Code Review &amp; Audit Report</div>
+  <h1>Bayawan Mini Hotel<br><span>Booking System</span></h1>
+  <div class="meta">Reviewed: March 2026 &nbsp;·&nbsp; Author: jaysonkeito &nbsp;·&nbsp; Stack: PHP / MySQL / PayMongo / Google OAuth</div>
+</header>
+
+<div class="wrapper">
+
+  <!-- Score Summary -->
+  <div class="scores">
+    <div class="score-card">
+      <div class="num score-good">A−</div>
+      <div class="label">Overall Grade</div>
+    </div>
+    <div class="score-card">
+      <div class="num score-warn">2</div>
+      <div class="label">Critical Issues</div>
+    </div>
+    <div class="score-card">
+      <div class="num score-warn">5</div>
+      <div class="label">Warnings</div>
+    </div>
+    <div class="score-card">
+      <div class="num score-good">8</div>
+      <div class="label">Strengths Found</div>
+    </div>
+    <div class="score-card">
+      <div class="num score-info">6</div>
+      <div class="label">Suggested Features</div>
+    </div>
+  </div>
+
+  <!-- ── 1. EXECUTIVE SUMMARY ── -->
+  <section>
+    <h2><span class="icon">📋</span> Executive Summary</h2>
+    <hr class="section-divider">
+    <p style="color:var(--text); font-size:15px; max-width:780px; line-height:1.8;">
+      This is a well-architected PHP hotel booking system with a clean separation of concerns, proper use of prepared statements throughout, a centralized <code>.env</code>-based config system, and a thoughtful rate-limiting implementation. The codebase is clearly the work of a developer who understands security fundamentals. The two critical issues below are fixable in under an hour, and several medium-priority improvements would bring this to a production-ready standard.
+    </p>
+  </section>
+
+  <!-- ── 2. SECURITY AUDIT ── -->
+  <section>
+    <h2><span class="icon">🔒</span> Security Audit</h2>
+    <hr class="section-divider">
+
+    <!-- STRENGTHS -->
+    <h3>✅ What's Well Done</h3>
+
+    <div class="finding good">
+      <div class="badge good">Strength</div>
+      <div class="finding-title">Prepared Statements Used Consistently</div>
+      <p>All database queries in <code>admin_configuration.php</code>'s helper functions (<code>select()</code>, <code>insert()</code>, <code>update()</code>, <code>delete()</code>) use <code>mysqli_prepare()</code> with bound parameters. SQL injection is effectively prevented project-wide.</p>
+    </div>
+
+    <div class="finding good">
+      <div class="badge good">Strength</div>
+      <div class="finding-title">Passwords Handled Correctly</div>
+      <p><code>password_hash(PASSWORD_DEFAULT)</code> on storage, <code>password_verify()</code> on login. The profile handler even has an explicit comment explaining <em>why</em> raw <code>$_POST</code> must be read for passwords instead of <code>filteration()</code> — avoiding a subtle htmlspecialchars corruption bug on special-character passwords.</p>
+    </div>
+
+    <div class="finding good">
+      <div class="badge good">Strength</div>
+      <div class="finding-title">Rate Limiting Implemented (Both Session + DB)</div>
+      <p>Login, OTP, and registration flows all use a session-based rate limiter with lockout. The contact form uses a separate DB-backed IP rate limiter. 5 attempts → 15-minute lockout is a solid baseline.</p>
+    </div>
+
+    <div class="finding good">
+      <div class="badge good">Strength</div>
+      <div class="finding-title">Remember-Me Token is Cryptographically Secure</div>
+      <p><code>bin2hex(random_bytes(32))</code> generates 64-character unpredictable tokens. The cookie is set with <code>HttpOnly</code> and <code>Secure</code> flags.</p>
+    </div>
+
+    <div class="finding good">
+      <div class="badge good">Strength</div>
+      <div class="finding-title">.env Excluded from Version Control</div>
+      <p><code>.gitignore</code> correctly excludes <code>.env</code> and only a safe <code>.env.example</code> is committed. No secrets are hardcoded anywhere in the codebase.</p>
+    </div>
+
+    <!-- CRITICAL -->
+    <h3 style="color:var(--red);">🚨 Critical Issues</h3>
+
+    <div class="finding critical">
+      <div class="badge critical">Critical</div>
+      <div class="finding-title">SQL Injection via Raw ID in last_login UPDATE</div>
+      <p>In <code>ajax/user_login_register.php</code>, after a successful login the last_login timestamp is updated with a raw session value injected directly into the query string:</p>
+      <pre><span class="c-comment">// VULNERABLE — $row['id'] is from DB, but this pattern is still unsafe</span>
+$conn->query(<span class="c-str">"UPDATE user_cred SET last_login = NOW() WHERE id = {$row['id']}"</span>);</pre>
+      <p>Although <code>$row['id']</code> comes from a database result and is likely an integer, it bypasses the prepared-statement convention used everywhere else. A coding error elsewhere could introduce a tainted value through this pattern.</p>
+      <pre><span class="c-comment">// FIX — use a prepared statement consistently</span>
+<span class="c-fix">$upd = $conn->prepare("UPDATE user_cred SET last_login = NOW() WHERE id = ?");
+$upd->bind_param("i", $row['id']);
+$upd->execute();
+$upd->close();</span></pre>
+    </div>
+
+    <div class="finding critical">
+      <div class="badge critical">Critical</div>
+      <div class="finding-title">Password Reset Reuses the remember_token Column</div>
+      <p>The forgot-password flow stores the reset token in <code>remember_token</code> — the same column used by the "Remember Me" login feature. This means:</p>
+      <ul style="color:var(--text); font-size:14px; padding-left:20px; margin: 8px 0;">
+        <li>Triggering a password reset <strong>invalidates all existing "Remember Me" sessions</strong> for that user.</li>
+        <li>The <code>recover_password</code> case has <strong>no expiry check</strong> — a reset link is valid forever until used.</li>
+      </ul>
+      <pre><span class="c-comment">// FIX — add dedicated columns to user_cred:</span>
+<span class="c-fix">ALTER TABLE user_cred
+  ADD COLUMN reset_token VARCHAR(64) NULL,
+  ADD COLUMN reset_expires DATETIME NULL;</span>
+
+<span class="c-comment">// Then check expiry in recover_password:</span>
+<span class="c-fix">$stmt = $conn->prepare(
+  "SELECT id FROM user_cred
+   WHERE email=? AND reset_token=? AND reset_expires > NOW() LIMIT 1"
+);</span></pre>
+    </div>
+
+    <!-- WARNINGS -->
+    <h3 style="color:var(--orange);">⚠️ Warnings</h3>
+
+    <div class="finding warning">
+      <div class="badge warning">Warning</div>
+      <div class="finding-title">SVG Upload Has No Content Sanitization</div>
+      <p><code>uploadSVGImage()</code> in <code>admin_essentials.php</code> only checks the MIME type and file size, then calls <code>move_uploaded_file()</code> directly. SVG files can contain embedded JavaScript (<code>&lt;script&gt;</code> tags) and are a well-known XSS vector when served from the same origin.</p>
+      <pre><span class="c-comment">// FIX — strip script tags and event handlers before saving</span>
+<span class="c-fix">$svg_content = file_get_contents($image['tmp_name']);
+$svg_content = preg_replace('/<script[\s\S]*?<\/script>/i', '', $svg_content);
+$svg_content = preg_replace('/\bon\w+\s*=/i', 'data-removed=', $svg_content);
+file_put_contents($path, $svg_content);</span></pre>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Warning</div>
+      <div class="finding-title">CSRF Tokens Not Implemented on AJAX Forms</div>
+      <p>All AJAX form submissions (login, registration, booking, profile update) rely on session-based authentication but do not include CSRF tokens. A malicious page could trigger cross-site requests if the user is logged in. This is especially important for payment and booking endpoints.</p>
+      <pre><span class="c-comment">// Minimal CSRF implementation — generate once per session</span>
+<span class="c-fix">if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+// In each AJAX handler:
+if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+    http_response_code(403); exit('CSRF validation failed');
+}</span></pre>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Warning</div>
+      <div class="finding-title">OTP Is Compared with Loose Equality (==)</div>
+      <p>In <code>ajax/user_login_register.php</code>, the OTP check uses <code>==</code> instead of <code>===</code>. In PHP, <code>"0" == false</code> and similar type-coercion oddities can cause unexpected matches. Always use strict comparison for security-sensitive checks.</p>
+      <pre><span class="c-key">// Vulnerable</span>
+if ($otp == $_SESSION['reg_otp']) { ... }
+
+<span class="c-fix">// Fixed</span>
+if ($otp === (string)$_SESSION['reg_otp']) { ... }</pre>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Warning</div>
+      <div class="finding-title">get_client_ip() Trusts X-Forwarded-For Without Proxy Validation</div>
+      <p>The IP detection in <code>rate_limiter.php</code> checks <code>HTTP_X_FORWARDED_FOR</code> first. This header is easily forged by clients unless you're behind a trusted reverse proxy. An attacker can bypass the DB-based rate limiter (contact form) by rotating this header value.</p>
+      <pre><span class="c-fix">// Only trust X-Forwarded-For if your server IS behind a known proxy.
+// Otherwise, use only REMOTE_ADDR:
+function get_client_ip(): string {
+    return filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)
+        ? $_SERVER['REMOTE_ADDR']
+        : '0.0.0.0';
+}</span></pre>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Warning</div>
+      <div class="finding-title">Payment Records Created Before Successful Payment Confirmation</div>
+      <p>In <code>user_pay_now.php</code>, booking rows are inserted into <code>booking_order</code> and <code>booking_details</code> <em>before</em> PayMongo confirms payment. The cart flow does mark these as "payment failed" if checkout creation fails, but if the user simply abandons the PayMongo page, orphaned "pending" records accumulate. A cleanup cron job or scheduled query should purge stale pending bookings older than 30–60 minutes.</p>
+    </div>
+  </section>
+
+  <!-- ── 3. BUG FIXES ── -->
+  <section>
+    <h2><span class="icon">🐛</span> Bug Fixes</h2>
+    <hr class="section-divider">
+
+    <div class="finding warning">
+      <div class="badge warning">Bug</div>
+      <div class="finding-title">filteration() Applied to json_decode() Output in admin_rooms.php</div>
+      <p>On <code>add_room</code> and <code>edit_room</code>, <code>json_decode($_POST['features'])</code> returns an array of integers, but then <code>filteration()</code> is called on it. <code>filteration()</code> expects an associative array of strings and calls <code>htmlspecialchars()</code> on each value — converting integer IDs to HTML-encoded strings. These are then passed as bound parameters. While MySQLi will cast them back, the function misuse is fragile and could silently corrupt non-integer decoded values in the future.</p>
+      <pre><span class="c-comment">// FIX — cast decoded JSON values to int directly, skip filteration()</span>
+<span class="c-fix">$features   = array_map('intval', (array)json_decode($_POST['features']   ?? '[]'));
+$facilities = array_map('intval', (array)json_decode($_POST['facilities'] ?? '[]'));</span></pre>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Bug</div>
+      <div class="finding-title">Booking Availability Check Uses session_start() Inside a Conditional</div>
+      <p>In <code>ajax/user_confirm_booking.php</code>, <code>session_start()</code> is called inside the <code>if(isset($_POST['check_availability']))</code> block — meaning it only starts when that specific POST key exists. If other functionality is ever added to this file, sessions will be unavailable. Move <code>session_start()</code> to the top of the file unconditionally.</p>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Bug</div>
+      <div class="finding-title">DOB Validation in complete_google_profile Is Too Loose</div>
+      <p>The check <code>if (!$dob_ts || $dob_ts >= strtotime('-1 year'))</code> only rejects dates less than 1 year ago. A user could enter a date 2 years ago or even a future date that is over 1 year ahead. A more complete validation should reject future dates and require a minimum age (e.g., 18 years).</p>
+      <pre><span class="c-fix">$dob_ts  = strtotime($dob);
+$min_age = strtotime('-18 years');
+if (!$dob_ts || $dob_ts > time() || $dob_ts > $min_age) {
+    echo 'Please enter a valid date of birth (must be 18+).';
+    exit;
+}</span></pre>
+    </div>
+
+    <div class="finding warning">
+      <div class="badge warning">Bug</div>
+      <div class="finding-title">uploadImage() Trusts MIME Type from $_FILES, Not File Content</div>
+      <p>The <code>$_FILES['type']</code> value is provided by the browser and can be spoofed. A user could upload a PHP file disguised as a JPEG. Use <code>finfo_file()</code> to check the actual file magic bytes.</p>
+      <pre><span class="c-fix">$finfo = new finfo(FILEINFO_MIME_TYPE);
+$actual_mime = $finfo->file($image['tmp_name']);
+$valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
+if (!in_array($actual_mime, $valid_mime)) return 'inv_img';</span></pre>
+    </div>
+  </section>
+
+  <!-- ── 4. SUGGESTED FEATURES ── -->
+  <section>
+    <h2><span class="icon">✨</span> Suggested New Features</h2>
+    <hr class="section-divider">
+
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Description</th>
+          <th>Priority</th>
+          <th>Complexity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Email Booking Confirmation</td>
+          <td>Send a styled HTML email receipt to the user after PayMongo confirms payment, including booking ID, room name, dates, and total paid. The email helper and PHPMailer are already set up — it's a one-function addition in <code>user_pay_response.php</code>.</td>
+          <td class="priority-high">HIGH</td>
+          <td>Low</td>
+        </tr>
+        <tr>
+          <td>Stale Booking Cleanup</td>
+          <td>A scheduled PHP script (cron job) or MySQL event that marks or deletes <code>booking_order</code> rows stuck in "pending" status for more than 1 hour. Prevents ghost bookings from blocking room availability.</td>
+          <td class="priority-high">HIGH</td>
+          <td>Low</td>
+        </tr>
+        <tr>
+          <td>Admin Booking Calendar View</td>
+          <td>A visual monthly calendar showing which rooms are occupied on which dates, using FullCalendar.js or a similar library fed by the existing booking query. Replaces table-scanning for availability management.</td>
+          <td class="priority-med">MED</td>
+          <td>Medium</td>
+        </tr>
+        <tr>
+          <td>Webhook-Based Payment Verification</td>
+          <td>Instead of relying only on redirect-based success/failure URLs, register a PayMongo webhook endpoint. This handles cases where the user closes the browser mid-payment before the redirect fires. Protects revenue integrity.</td>
+          <td class="priority-med">MED</td>
+          <td>Medium</td>
+        </tr>
+        <tr>
+          <td>SMS Notifications (Semaphore / Vonage)</td>
+          <td>Send an SMS to the user's registered phone number on booking confirmation and check-in reminder (1 day before). Particularly relevant for Philippine users where SMS has high reach. Phone numbers are already stored.</td>
+          <td class="priority-med">MED</td>
+          <td>Medium</td>
+        </tr>
+        <tr>
+          <td>Two-Factor Authentication (2FA)</td>
+          <td>Optional TOTP-based 2FA for admin accounts using a library like <code>RobThree/TwoFactorAuth</code>. Admin panel controls payments and user data — extra protection is warranted. OTP infrastructure already exists for reference.</td>
+          <td class="priority-low">LOW</td>
+          <td>High</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── 5. DOCUMENTATION ── -->
+  <section>
+    <h2><span class="icon">📖</span> Documentation Notes</h2>
+    <hr class="section-divider">
+
+    <div class="finding info">
+      <div class="badge info">Docs</div>
+      <div class="finding-title">Architecture Overview</div>
+      <p>The system follows a <strong>procedural PHP + AJAX pattern</strong> with two distinct authenticated contexts: <strong>User</strong> (guest-facing) and <strong>Admin</strong> (hotel staff). All pages share a central config loaded via <code>config/env.php</code>. Database operations are wrapped in four typed helpers (<code>select</code>, <code>insert</code>, <code>update</code>, <code>delete</code>) defined in <code>admin_configuration.php</code>.</p>
+      <pre>bayawan-mini-hotel-system/
+├── config/env.php              ← Single source of truth for all config constants
+├── admin/
+│   ├── includes/
+│   │   ├── admin_configuration.php   ← DB connection + query helpers
+│   │   └── admin_essentials.php      ← Auth guards, image helpers, alerts
+│   └── ajax/                         ← Admin AJAX endpoints (auth-gated)
+├── ajax/                             ← User AJAX endpoints
+├── includes/
+│   ├── rate_limiter.php              ← Session + DB rate limiting
+│   ├── paymongo/                     ← PayMongo checkout integration
+│   └── vendor/                       ← PHPMailer (Composer)
+└── .env                              ← NOT committed — copy from .env.example</pre>
+    </div>
+
+    <div class="finding info">
+      <div class="badge info">Docs</div>
+      <div class="finding-title">Booking State Machine</div>
+      <p>Bookings move through the following statuses in <code>booking_order.booking_status</code>:</p>
+      <pre>pending  →  booked  →  checked_in  →  checked_out
+   ↓              ↓
+payment       cancelled
+ failed</pre>
+      <p>Payment confirmation is handled in <code>user_pay_response.php</code>, which reads the PayMongo session ID from <code>$_SESSION</code> and calls the PayMongo API to verify payment before updating status to <code>booked</code>.</p>
+    </div>
+
+    <div class="finding info">
+      <div class="badge info">Docs</div>
+      <div class="finding-title">Session Variables Reference</div>
+      <p>The following session keys are used across the user-facing flow:</p>
+      <pre><span class="c-key">$_SESSION['login']</span>         → bool   — user is authenticated
+<span class="c-key">$_SESSION['uId']</span>           → int    — user's database ID
+<span class="c-key">$_SESSION['user_name']</span>     → string — display name
+<span class="c-key">$_SESSION['user_pic']</span>      → string — profile image filename
+<span class="c-key">$_SESSION['room']</span>          → array  — selected room data (id, name, price, payment, available)
+<span class="c-key">$_SESSION['cart']</span>          → array  — cart items for multi-room checkout
+<span class="c-key">$_SESSION['google_new']</span>    → bool   — triggers complete-profile modal for new Google OAuth users
+<span class="c-key">$_SESSION['paymongo_session_id']</span> → string — PayMongo checkout session ID for verification
+<span class="c-key">$_SESSION['cart_booking_ids']</span>    → array  — booking IDs created during cart checkout
+<span class="c-key">$_SESSION['reg_*']</span>         → mixed  — temporary registration OTP flow data</pre>
+    </div>
+
+    <div class="finding info">
+      <div class="badge info">Docs</div>
+      <div class="finding-title">Rate Limiting Configuration</div>
+      <p>Two constants in <code>includes/rate_limiter.php</code> control all rate limiting:</p>
+      <pre><span class="c-key">RATE_MAX_ATTEMPTS</span>    = 5          <span class="c-comment">// attempts before lockout</span>
+<span class="c-key">RATE_LOCKOUT_SECONDS</span> = 900        <span class="c-comment">// 15 minutes</span></pre>
+      <p>Session-based limits (<code>session_rate_limit</code>) apply per browser session and are used for login, OTP, and registration. DB-based limits (<code>db_rate_limit</code>) apply per IP address and persist across sessions — used for the contact form.</p>
+    </div>
+
+    <div class="finding good">
+      <div class="badge good">Docs</div>
+      <div class="finding-title">Deployment Checklist</div>
+      <pre>1. cp .env.example .env  &amp;&amp;  fill in all values
+2. Set APP_ENV=production  (hides DB error details from end users)
+3. Create DB and import  Database_and_Directory/updatedsqlV1.sql
+4. Run: composer install  (inside bayawan-mini-hotel-system/includes/)
+5. Ensure /images/ subdirs exist and are writable by the web server
+6. Register Google OAuth redirect URI:
+   {APP_URL}/ajax/user_google_callback.php
+7. Set PayMongo webhook URL (recommended):
+   {APP_URL}/includes/paymongo/user_webhook.php
+8. Confirm .env is in .gitignore before any git push</pre>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div>Bayawan Mini Hotel — Code Review Report</div>
+  <div>Generated by <span>Claude</span> · March 2026</div>
+</footer>
+
+</body>
+</html>

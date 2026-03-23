@@ -123,6 +123,7 @@ if (!defined('PAYMONGO_PUBLIC_KEY'))  define('PAYMONGO_PUBLIC_KEY',  env('PAYMON
 if (!defined('PAYMONGO_API_URL'))     define('PAYMONGO_API_URL',     'https://api.paymongo.com/v1');
 if (!defined('PAYMONGO_SUCCESS_URL')) define('PAYMONGO_SUCCESS_URL', APP_URL . '/user_pay_response.php?status=success');
 if (!defined('PAYMONGO_FAILED_URL'))  define('PAYMONGO_FAILED_URL',  APP_URL . '/user_pay_response.php?status=failed');
+if (!defined('PAYMONGO_WEBHOOK_SECRET')) define('PAYMONGO_WEBHOOK_SECRET', env('PAYMONGO_WEBHOOK_SECRET', ''));
 
 // Google OAuth
 // Redirect URI is built from APP_URL — no editing needed when deploying
