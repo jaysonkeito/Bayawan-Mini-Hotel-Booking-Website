@@ -21,12 +21,13 @@
 //
 // The compound key (room_id + dates) prevents the exact same
 // room+dates combination from being added twice.
-
+session_start();
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
+require_once '../includes/csrf.php';
+csrf_verify();
 
 date_default_timezone_set("Asia/Manila");
-session_start();
 
 header('Content-Type: application/json');
 

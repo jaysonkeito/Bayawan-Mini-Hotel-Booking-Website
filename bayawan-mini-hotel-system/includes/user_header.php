@@ -1,7 +1,13 @@
-<?php // bayawan-mini-hotel-system/includes/user_header.php
+<?php
+// bayawan-mini-hotel-system/includes/user_header.php
 
-require_once __DIR__ . '/lang.php';
+// CSRF: Generate token once for this session and embed in a meta tag.
+// The XHR interceptor script below reads it and attaches it automatically
+// to every AJAX request fired from any page that includes this header.
+require_once __DIR__ . '/csrf.php';
 ?>
+<meta name="csrf-token" content="<?= csrf_token() ?>">
+
 <nav id="nav-bar" class="navbar navbar-expand-lg navbar-light bg-white px-lg-3 py-lg-2 shadow-sm sticky-top">
     <div class="container-fluid">
         <a class="navbar-brand me-5 fw-bold fs-3 h-font" href="user_index.php">Bayawan Mini Hotel</a>
@@ -11,19 +17,19 @@ require_once __DIR__ . '/lang.php';
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="user_index.php"><?php echo t('nav_home'); ?></a>
+                    <a class="nav-link" href="user_index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="user_rooms.php"><?php echo t('nav_rooms'); ?></a>
+                    <a class="nav-link" href="user_rooms.php">Rooms</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="user_facilities.php"><?php echo t('nav_facilities'); ?></a>
+                    <a class="nav-link" href="user_facilities.php">Facilities</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="user_contact.php"><?php echo t('nav_contact'); ?></a>
+                    <a class="nav-link" href="user_contact.php">Contact us</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="user_about.php"><?php echo t('nav_about'); ?></a>
+                    <a class="nav-link" href="user_about.php">About</a>
                 </li>
                 <?php if (isset($_SESSION['login']) && $_SESSION['login'] == true): ?>
                     <li class="nav-item">
@@ -43,20 +49,7 @@ require_once __DIR__ . '/lang.php';
                     </li>
                 <?php endif; ?>
             </ul>
-            <div class="d-flex align-items-center gap-2">
-
-                <!-- ── Language Toggle ───────────────────────────────── -->
-                <?php $current_lang = $_SESSION['lang'] ?? 'en'; ?>
-                <div class="btn-group" role="group" aria-label="Language switcher">
-                    <button type="button"
-                            class="btn btn-sm shadow-none <?php echo $current_lang === 'en'  ? 'btn-dark' : 'btn-outline-dark'; ?>"
-                            onclick="setLang('en')">EN</button>
-                    <button type="button"
-                            class="btn btn-sm shadow-none <?php echo $current_lang === 'fil' ? 'btn-dark' : 'btn-outline-dark'; ?>"
-                            onclick="setLang('fil')">FIL</button>
-                </div>
-                <!-- ──────────────────────────────────────────────────── -->
-
+            <div class="d-flex">
                 <?php 
                 if (isset($_SESSION['login']) && $_SESSION['login'] == true) {
                     $path = USERS_IMG_PATH;
@@ -78,10 +71,6 @@ require_once __DIR__ . '/lang.php';
                         $avatarHtml = '<i class="bi bi-person-circle fs-5 me-1"></i>';
                     }
 
-                    $lbl_profile  = t('nav_profile');
-                    $lbl_bookings = t('nav_bookings');
-                    $lbl_logout   = t('nav_logout');
-
                     echo <<<data
                     <div class="btn-group">
                         <button type="button" class="btn btn-outline-dark shadow-none dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
@@ -89,22 +78,19 @@ require_once __DIR__ . '/lang.php';
                             {$userName}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-lg-end">
-                            <li><a class="dropdown-item" href="user_profile.php">{$lbl_profile}</a></li>
-                            <li><a class="dropdown-item" href="user_bookings.php">{$lbl_bookings}</a></li>
-                            <li><a class="dropdown-item" href="user_logout.php">{$lbl_logout}</a></li>
+                            <li><a class="dropdown-item" href="user_profile.php">Profile</a></li>
+                            <li><a class="dropdown-item" href="user_bookings.php">Bookings</a></li>
+                            <li><a class="dropdown-item" href="user_logout.php">Logout</a></li>
                         </ul>
                     </div>
                     data;
                 } else {
-                    $lbl_login    = t('nav_login');
-                    $lbl_register = t('nav_register');
-
                     echo <<<data
                     <button type="button" class="btn btn-outline-dark shadow-none me-lg-3 me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                        {$lbl_login}
+                        Login
                     </button>
                     <button type="button" class="btn btn-outline-dark shadow-none" data-bs-toggle="modal" data-bs-target="#registerModal">
-                        {$lbl_register}
+                        Register
                     </button>
                     data;
                 }
@@ -121,18 +107,18 @@ require_once __DIR__ . '/lang.php';
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center" id="loginModalLabel">
-                    <i class="bi bi-person-circle fs-3 me-2"></i> <?php echo t('login_title'); ?>
+                    <i class="bi bi-person-circle fs-3 me-2"></i> User Login
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="login-form">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label"><?php echo t('login_email_mob'); ?></label>
+                        <label class="form-label">Email / Mobile</label>
                         <input type="text" name="email_mob" required class="form-control shadow-none">
                     </div>
                     <div class="mb-4 position-relative">
-                        <label class="form-label"><?php echo t('login_password'); ?></label>
+                        <label class="form-label">Password</label>
                         <div class="input-group">
                             <input type="password" name="pass" id="loginPassword" required class="form-control shadow-none">
                             <span class="input-group-text bg-white border-start-0" id="toggleLoginPassword" style="cursor: pointer;">
@@ -143,21 +129,22 @@ require_once __DIR__ . '/lang.php';
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="remember" id="rememberMe">
-                            <label class="form-check-label" for="rememberMe"><?php echo t('login_remember'); ?></label>
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
                         </div>
                         <button type="button" class="btn text-secondary text-decoration-none shadow-none p-0" data-bs-toggle="modal" data-bs-target="#forgotModal" data-bs-dismiss="modal">
-                            <?php echo t('login_forgot'); ?>
+                            Forgot Password?
                         </button>
                     </div>
-                    <button type="submit" class="btn btn-dark shadow-none w-100"><?php echo t('login_btn'); ?></button>
+                    <button type="submit" class="btn btn-dark shadow-none w-100">LOGIN</button>
+
                     <div class="d-flex align-items-center my-3">
                         <hr class="flex-grow-1">
-                        <span class="mx-2 text-muted small"><?php echo t('login_or'); ?></span>
+                        <span class="mx-2 text-muted small">or</span>
                         <hr class="flex-grow-1">
                     </div>
                     <a href="ajax/user_google_auth.php?action=login" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
                         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20px">
-                        <?php echo t('login_google'); ?>
+                        Login with Google
                     </a>
                 </div>
             </form>
@@ -171,7 +158,7 @@ require_once __DIR__ . '/lang.php';
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center" id="registerModalLabel">
-                    <i class="bi bi-person-plus-fill fs-3 me-2"></i> <?php echo t('reg_title'); ?>
+                    <i class="bi bi-person-plus-fill fs-3 me-2"></i> User Registration
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -181,34 +168,36 @@ require_once __DIR__ . '/lang.php';
                     <div id="step1">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_fullname'); ?></label>
+                                <label class="form-label">Full Name</label>
                                 <input type="text" class="form-control" id="regName" name="name" placeholder="Juan Dela Cruz" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_email'); ?></label>
+                                <label class="form-label">Email Address</label>
                                 <input type="email" class="form-control" id="regEmail" name="email" placeholder="you@example.com" required>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="button" class="btn btn-primary w-100" id="sendCodeBtn"><?php echo t('reg_send_code'); ?></button>
+                            <button type="button" class="btn btn-primary w-100" id="sendCodeBtn">Send Verification Code</button>
                         </div>
+
                         <div class="d-flex align-items-center my-3">
                             <hr class="flex-grow-1">
-                            <span class="mx-2 text-muted small"><?php echo t('login_or'); ?></span>
+                            <span class="mx-2 text-muted small">or</span>
                             <hr class="flex-grow-1">
                         </div>
                         <a href="ajax/user_google_auth.php?action=register" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20px">
-                            <?php echo t('reg_google'); ?>
+                            Sign up with Google
                         </a>
+
                         <div id="otpSection" class="mt-4" style="display:none;">
-                            <label class="form-label"><?php echo t('reg_otp_label'); ?></label>
+                            <label class="form-label">Verification Code</label>
                             <div class="input-group">
                                 <input type="text" class="form-control text-center" id="otpCode" name="otp" maxlength="6" placeholder="------" pattern="[0-9]{6}" inputmode="numeric" required disabled>
-                                <button type="button" class="btn btn-outline-secondary" id="resendCodeBtn" style="display:none;"><?php echo t('reg_resend'); ?></button>
+                                <button type="button" class="btn btn-outline-secondary" id="resendCodeBtn" style="display:none;">Resend</button>
                             </div>
                             <div class="mt-2">
-                                <button type="button" class="btn btn-success w-100" id="verifyCodeBtn" style="display:none;"><?php echo t('reg_verify'); ?></button>
+                                <button type="button" class="btn btn-success w-100" id="verifyCodeBtn" style="display:none;">Verify Email</button>
                             </div>
                             <p id="otpMessage" class="mt-2 small fw-bold" style="min-height:1.5rem;"></p>
                         </div>
@@ -217,41 +206,41 @@ require_once __DIR__ . '/lang.php';
                     <div id="additionalFields" style="display:none;">
                         <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
                             <i class="bi bi-check-circle-fill fs-4 me-2"></i>
-                            <div><?php echo t('reg_email_ok'); ?></div>
+                            <div>Email verified successfully!</div>
                         </div>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_fullname'); ?></label>
+                                <label class="form-label">Full Name</label>
                                 <input type="text" class="form-control bg-light" id="lockedName" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_email'); ?></label>
+                                <label class="form-label">Email Address</label>
                                 <input type="email" class="form-control bg-light" id="lockedEmail" name="email" readonly>
                             </div>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_phone'); ?></label>
+                                <label class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" name="phonenum" placeholder="+63 9xx xxx xxxx" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_pic'); ?></label>
+                                <label class="form-label">Profile Picture (optional)</label>
                                 <input type="file" class="form-control" name="profile" accept="image/jpeg,image/png,image/webp">
                             </div>
                             <div class="col-12">
-                                <label class="form-label"><?php echo t('reg_address'); ?></label>
+                                <label class="form-label">Address</label>
                                 <textarea class="form-control" name="address" rows="2" placeholder="Street, Barangay, City" required></textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_postal'); ?></label>
+                                <label class="form-label">Postal Code</label>
                                 <input type="text" class="form-control" name="pincode" placeholder="6000" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><?php echo t('reg_dob'); ?></label>
+                                <label class="form-label">Date of Birth</label>
                                 <input type="date" class="form-control" name="dob" required>
                             </div>
                             <div class="col-md-6 position-relative">
-                                <label class="form-label"><?php echo t('login_password'); ?></label>
+                                <label class="form-label">Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="regPassword" name="pass" required>
                                     <span class="input-group-text bg-white border-start-0" id="toggleRegPassword" style="cursor: pointer;">
@@ -260,7 +249,7 @@ require_once __DIR__ . '/lang.php';
                                 </div>
                             </div>
                             <div class="col-md-6 position-relative">
-                                <label class="form-label"><?php echo t('reg_cpassword'); ?></label>
+                                <label class="form-label">Confirm Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="regCPassword" name="cpass" required>
                                     <span class="input-group-text bg-white border-start-0" id="toggleRegCPassword" style="cursor: pointer;">
@@ -271,27 +260,27 @@ require_once __DIR__ . '/lang.php';
                         </div>
                         <div class="card mt-4 border-0 bg-light mx-auto" style="max-width: 480px;">
                             <div class="card-body text-center">
-                                <p class="fw-bold mb-3"><?php echo t('reg_pass_rules'); ?></p>
+                                <p class="fw-bold mb-3">Password must contain:</p>
                                 <ul class="list-unstyled small d-inline-block text-start" id="passwordRequirements" style="max-width: 360px;">
-                                    <li id="length" class="text-danger"><i class="bi bi-x-circle me-2"></i><?php echo t('reg_rule_len'); ?></li>
-                                    <li id="lower"  class="text-danger"><i class="bi bi-x-circle me-2"></i><?php echo t('reg_rule_lower'); ?></li>
-                                    <li id="upper"  class="text-danger"><i class="bi bi-x-circle me-2"></i><?php echo t('reg_rule_upper'); ?></li>
-                                    <li id="number" class="text-danger"><i class="bi bi-x-circle me-2"></i><?php echo t('reg_rule_number'); ?></li>
-                                    <li id="special" class="text-danger"><i class="bi bi-x-circle me-2"></i><?php echo t('reg_rule_special'); ?></li>
+                                    <li id="length" class="text-danger"><i class="bi bi-x-circle me-2"></i>At least 8 characters</li>
+                                    <li id="lower" class="text-danger"><i class="bi bi-x-circle me-2"></i>Lowercase letter</li>
+                                    <li id="upper" class="text-danger"><i class="bi bi-x-circle me-2"></i>Uppercase letter</li>
+                                    <li id="number" class="text-danger"><i class="bi bi-x-circle me-2"></i>Number</li>
+                                    <li id="special" class="text-danger"><i class="bi bi-x-circle me-2"></i>Special character</li>
                                 </ul>
                             </div>
                         </div>
                         <div class="form-check mt-4 d-flex align-items-center justify-content-center gap-2">
                             <input class="form-check-input mt-0" type="checkbox" id="agreeTerms" name="agree_terms" required>
                             <label class="form-check-label mb-0" for="agreeTerms" style="font-size: 0.95rem;">
-                                <?php echo t('reg_agree'); ?>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-primary"><?php echo t('reg_terms'); ?></a>
-                                <?php echo t('reg_and'); ?>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" class="text-primary"><?php echo t('reg_privacy'); ?></a>
+                                I agree to the 
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-primary">Terms and Conditions</a> 
+                                and 
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" class="text-primary">Privacy Policy</a>
                             </label>
                         </div>
                         <button type="submit" id="finalRegisterBtn" class="btn btn-primary w-100 mt-4" disabled>
-                            <?php echo t('reg_complete_btn'); ?>
+                            Complete Registration
                         </button>
                     </div>
                 </form>
@@ -307,20 +296,20 @@ require_once __DIR__ . '/lang.php';
             <form id="forgot-form">
                 <div class="modal-header">
                     <h5 class="modal-title d-flex align-items-center">
-                        <i class="bi bi-person-circle fs-3 me-2"></i> <?php echo t('forgot_title'); ?>
+                        <i class="bi bi-person-circle fs-3 me-2"></i> Forgot Password
                     </h5>
                 </div>
                 <div class="modal-body">
                     <span class="badge rounded-pill bg-light text-dark mb-3 text-wrap lh-base">
-                        <?php echo t('forgot_note'); ?>
+                        Note: A link will be sent to your email to reset your password!
                     </span>
                     <div class="mb-4">
-                        <label class="form-label"><?php echo t('reg_email'); ?></label>
+                        <label class="form-label">Email</label>
                         <input type="email" name="email" required class="form-control shadow-none">
                     </div>
                     <div class="mb-2 text-end">
-                        <button type="button" class="btn shadow-none p-0 me-2" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal"><?php echo t('forgot_cancel'); ?></button>
-                        <button type="submit" class="btn btn-dark shadow-none"><?php echo t('forgot_send'); ?></button>
+                        <button type="button" class="btn shadow-none p-0 me-2" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">CANCEL</button>
+                        <button type="submit" class="btn btn-dark shadow-none">SEND LINK</button>
                     </div>
                 </div>
             </form>
@@ -333,7 +322,7 @@ require_once __DIR__ . '/lang.php';
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><?php echo t('reg_terms'); ?></h5>
+        <h5 class="modal-title">Terms and Conditions</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="font-size: 0.96rem; line-height: 1.65;">
@@ -362,7 +351,7 @@ require_once __DIR__ . '/lang.php';
         <p class="text-center text-muted mt-4 small">Bayawan Mini Hotel reserves the right to modify these terms at any time.</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo t('close'); ?></button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -373,7 +362,7 @@ require_once __DIR__ . '/lang.php';
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><?php echo t('reg_privacy'); ?></h5>
+                <h5 class="modal-title">Privacy Policy</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="font-size: 0.96rem; line-height: 1.65;">
@@ -389,7 +378,6 @@ require_once __DIR__ . '/lang.php';
                 <h6 class="mt-4">2. How We Use Your Information</h6>
                 <ul>
                     <li>To process and confirm your booking</li>
-                    <li>To communicate with you about your reservation</li>
                     <li>To improve our services and website</li>
                     <li>For security and fraud prevention</li>
                 </ul>
@@ -397,21 +385,33 @@ require_once __DIR__ . '/lang.php';
                 <p class="text-center text-muted small mt-4">For any privacy-related questions, please contact us at cebu.mini.hotel.cmh@gmail.com</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo t('close'); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Language Switcher Script -->
+<!-- ═══════════════════════════════════════════════════════════════
+     CSRF XHR Interceptor
+     Automatically attaches the CSRF token to every XMLHttpRequest
+     sent from any page that includes this header. No changes needed
+     in any individual JS file — this covers all of them globally.
+     ═══════════════════════════════════════════════════════════════ -->
 <script>
-function setLang(lang) {
-    fetch('ajax/user_set_lang.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'lang=' + encodeURIComponent(lang)
-    }).then(r => r.text()).then(res => {
-        if (res.trim() === 'ok') location.reload();
-    });
-}
+(function () {
+    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    if (!csrfToken) return;
+
+    var _send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (body) {
+        if (body instanceof FormData) {
+            // FormData requests (file uploads, multi-field forms)
+            body.append('csrf_token', csrfToken);
+        } else if (typeof body === 'string' && body.length > 0) {
+            // URL-encoded string requests (e.g. 'get_all_rooms=1&page=2')
+            body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
+        }
+        _send.call(this, body);
+    };
+})();
 </script>

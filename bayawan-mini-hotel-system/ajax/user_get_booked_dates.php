@@ -5,6 +5,8 @@
 
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
+require_once '../includes/csrf.php';
+csrf_verify();
 
 date_default_timezone_set("Asia/Manila");
 

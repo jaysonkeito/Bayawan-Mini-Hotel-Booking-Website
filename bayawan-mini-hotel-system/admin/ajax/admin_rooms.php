@@ -2,6 +2,8 @@
 // bayawan-mini-hotel-system/admin/ajax/admin_rooms.php
 require('../includes/admin_configuration.php');
 require('../includes/admin_essentials.php');
+require_once '../../includes/csrf.php';
+csrf_verify();
 adminLogin();
 
 define('ROOMS_PER_PAGE', 10);
@@ -40,11 +42,14 @@ function build_rooms_pagination($total_rows, $page) {
 
 // ─── ADD ROOM ─────────────────────────────────────────────────────────
 if (isset($_POST['add_room'])) {
-    // FIX (Bug): json_decode() returns an array of integers (IDs).
-    // filteration() expects an associative string array and would mangle
-    // integer IDs via htmlspecialchars(). Cast to int[] directly instead.
-    $features   = array_map('intval', (array) json_decode($_POST['features']   ?? '[]'));
-    $facilities = array_map('intval', (array) json_decode($_POST['facilities'] ?? '[]'));
+    // FIX: Previously called filteration(json_decode(...)) on the features/facilities
+    // arrays. filteration() expects an associative array of strings and calls
+    // htmlspecialchars() on each value — converting integer IDs to HTML-encoded strings.
+    // This is fragile and could silently corrupt non-integer values in the future.
+    // Instead, cast each decoded value directly to int. IDs are always integers,
+    // so this is both correct and safe — no HTML encoding needed.
+    $features   = array_map('intval', (array)json_decode($_POST['features']   ?? '[]'));
+    $facilities = array_map('intval', (array)json_decode($_POST['facilities'] ?? '[]'));
     $frm_data   = filteration($_POST);
     $flag = 0;
 
@@ -155,9 +160,10 @@ if (isset($_POST['get_room'])) {
 
 // ─── EDIT ROOM ────────────────────────────────────────────────────────
 if (isset($_POST['edit_room'])) {
-    // FIX (Bug): Same as add_room — cast JSON decoded IDs to int[], not filteration()
-    $features   = array_map('intval', (array) json_decode($_POST['features']   ?? '[]'));
-    $facilities = array_map('intval', (array) json_decode($_POST['facilities'] ?? '[]'));
+    // FIX: Same as add_room — cast decoded JSON IDs directly to int
+    // instead of passing through filteration() which misuses htmlspecialchars on integers.
+    $features   = array_map('intval', (array)json_decode($_POST['features']   ?? '[]'));
+    $facilities = array_map('intval', (array)json_decode($_POST['facilities'] ?? '[]'));
     $frm_data   = filteration($_POST);
     $flag = 0;
 

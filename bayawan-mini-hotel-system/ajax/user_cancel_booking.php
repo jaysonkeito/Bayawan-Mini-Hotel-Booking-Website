@@ -1,11 +1,13 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_cancel_booking.php
+session_start();
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
 require('../includes/user_email_helper.php');
+require_once '../includes/csrf.php';
+csrf_verify();
 
 date_default_timezone_set("Asia/Manila");
-session_start();
 
 if (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) {
     echo json_encode(['status' => 'error', 'message' => 'Not logged in.']);

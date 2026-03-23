@@ -4,54 +4,46 @@
 // Provides two strategies:
 //   1. SESSION-based  — for login, OTP, registration (per browser session)
 //   2. DATABASE-based — for contact form (per IP, persists across sessions)
+//
+// Usage:
+//   session_rate_limit('user_login');          // check + increment
+//   session_rate_reset('user_login');           // reset on success
+//   db_rate_limit($conn, 'contact_form', $ip); // check + increment
+//   db_rate_reset($conn, 'contact_form', $ip); // reset on success
 
 define('RATE_MAX_ATTEMPTS', 5);
 define('RATE_LOCKOUT_SECONDS', 15 * 60); // 15 minutes
 
-// ─────────────────────────────────────────────────────────────
-//  TRUSTED PROXY CONFIGURATION
-//
-//  FIX (Warning): The original code checked HTTP_X_FORWARDED_FOR before
-//  REMOTE_ADDR, which allows any client to spoof their IP by setting
-//  that header — bypassing the IP-based rate limiter entirely.
-//
-//  SOLUTION: Only trust X-Forwarded-For if your server is actually behind
-//  a known reverse proxy (nginx, Cloudflare, load balancer, etc.).
-//
-//  HOW TO USE:
-//   - If you are NOT behind a proxy (shared hosting, direct Apache/Nginx):
-//       Leave TRUSTED_PROXIES as an empty array. Only REMOTE_ADDR is used.
-//   - If you ARE behind a proxy (e.g. Cloudflare, nginx reverse proxy):
-//       Add the proxy's outbound IP(s) to the array below.
-//       Example: define('TRUSTED_PROXIES', ['103.21.244.0', '172.16.0.1']);
-//
-//  Cloudflare IP ranges change occasionally — see:
-//  https://www.cloudflare.com/ips/
-// ─────────────────────────────────────────────────────────────
-if (!defined('TRUSTED_PROXIES')) {
-    define('TRUSTED_PROXIES', [
-        // Add your reverse proxy IPs here if applicable.
-        // Leave empty if running directly on Apache/Nginx without a proxy.
-    ]);
-}
-
 
 // ─────────────────────────────────────────────────────────────
 //  SESSION-BASED RATE LIMITER
+//  Used for: user login, admin login, OTP, registration
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * Check and increment session-based rate limit.
+ *
+ * @param string $action  e.g. 'user_login', 'admin_login', 'otp', 'register'
+ * @return array [
+ *   'allowed'        => bool,
+ *   'attempts_left'  => int,
+ *   'retry_after'    => int (seconds until lockout expires, 0 if not locked)
+ * ]
+ */
 function session_rate_limit(string $action): array {
     if (session_status() === PHP_SESSION_NONE) session_start();
 
-    $key = 'rl_' . $action;
-    $now = time();
+    $key      = 'rl_' . $action;
+    $now      = time();
 
+    // Initialise if missing
     if (!isset($_SESSION[$key])) {
         $_SESSION[$key] = ['attempts' => 0, 'locked_until' => 0];
     }
 
     $data = &$_SESSION[$key];
 
+    // Check if currently locked
     if ($data['locked_until'] > $now) {
         return [
             'allowed'       => false,
@@ -60,13 +52,16 @@ function session_rate_limit(string $action): array {
         ];
     }
 
+    // If lockout just expired, reset
     if ($data['locked_until'] > 0 && $data['locked_until'] <= $now) {
         $data['attempts']     = 0;
         $data['locked_until'] = 0;
     }
 
+    // Increment attempts
     $data['attempts']++;
 
+    // Lock if over limit
     if ($data['attempts'] >= RATE_MAX_ATTEMPTS) {
         $data['locked_until'] = $now + RATE_LOCKOUT_SECONDS;
         return [
@@ -83,12 +78,18 @@ function session_rate_limit(string $action): array {
     ];
 }
 
+/**
+ * Reset session-based rate limit on successful action.
+ */
 function session_rate_reset(string $action): void {
     if (session_status() === PHP_SESSION_NONE) session_start();
     $key = 'rl_' . $action;
     $_SESSION[$key] = ['attempts' => 0, 'locked_until' => 0];
 }
 
+/**
+ * Format retry_after seconds into a human-readable string.
+ */
 function format_retry_after(int $seconds): string {
     if ($seconds >= 60) {
         $mins = ceil($seconds / 60);
@@ -100,41 +101,40 @@ function format_retry_after(int $seconds): string {
 
 // ─────────────────────────────────────────────────────────────
 //  DATABASE-BASED RATE LIMITER
+//  Used for: contact form (IP-based, persists across sessions)
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Get the real client IP address.
+ * Get client IP address.
  *
- * FIX (Warning): Only reads X-Forwarded-For when REMOTE_ADDR belongs to a
- * known trusted proxy. Otherwise falls back to REMOTE_ADDR directly.
- * This prevents clients from forging their IP by crafting the header.
+ * FIX: Do NOT trust X-Forwarded-For or other client-supplied headers.
+ * These headers are trivially forged by any client, allowing an attacker
+ * to bypass the DB-based rate limiter by simply rotating the header value.
+ * Use only REMOTE_ADDR, which is set by the TCP connection and cannot be
+ * spoofed by the client (it is the IP of whoever is actually talking to us).
+ *
+ * If your server IS behind a trusted reverse proxy (e.g. nginx, Cloudflare),
+ * and you need the real visitor IP, add proxy validation here — but only
+ * trust the forwarded header when REMOTE_ADDR matches your known proxy IPs.
  */
 function get_client_ip(): string {
-    $remote = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-
-    // Only honour X-Forwarded-For when we are actually behind a trusted proxy
-    $trusted = defined('TRUSTED_PROXIES') ? (array) TRUSTED_PROXIES : [];
-
-    if (!empty($trusted) && in_array($remote, $trusted, true)) {
-        $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-        if ($forwarded !== '') {
-            // The header may contain a chain: "client, proxy1, proxy2"
-            // The leftmost IP is the original client.
-            $ip = trim(explode(',', $forwarded)[0]);
-            if (filter_var($ip, FILTER_VALIDATE_IP)) {
-                return $ip;
-            }
-        }
-    }
-
-    // Default: trust only the direct connection IP
-    return filter_var($remote, FILTER_VALIDATE_IP) ? $remote : '0.0.0.0';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
 }
 
+/**
+ * Check and increment DB-based rate limit.
+ *
+ * @param mysqli $conn
+ * @param string $action  e.g. 'contact_form'
+ * @param string $ip
+ * @return array [allowed, attempts_left, retry_after]
+ */
 function db_rate_limit(mysqli $conn, string $action, string $ip): array {
     $now     = date('Y-m-d H:i:s');
     $lockout = date('Y-m-d H:i:s', time() + RATE_LOCKOUT_SECONDS);
 
+    // Fetch existing record
     $stmt = mysqli_prepare($conn, "SELECT * FROM `rate_limit` WHERE `ip`=? AND `action`=?");
     mysqli_stmt_bind_param($stmt, 'ss', $ip, $action);
     mysqli_stmt_execute($stmt);
@@ -143,23 +143,31 @@ function db_rate_limit(mysqli $conn, string $action, string $ip): array {
     mysqli_stmt_close($stmt);
 
     if (!$row) {
+        // First attempt — insert
         $stmt = mysqli_prepare($conn,
             "INSERT INTO `rate_limit`(`ip`,`action`,`attempts`,`last_attempt`) VALUES (?,?,1,?)");
         mysqli_stmt_bind_param($stmt, 'sss', $ip, $action, $now);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        return ['allowed' => true, 'attempts_left' => RATE_MAX_ATTEMPTS - 1, 'retry_after' => 0];
-    }
-
-    if ($row['locked_until'] && strtotime($row['locked_until']) > time()) {
         return [
-            'allowed'       => false,
-            'attempts_left' => 0,
-            'retry_after'   => strtotime($row['locked_until']) - time(),
+            'allowed'       => true,
+            'attempts_left' => RATE_MAX_ATTEMPTS - 1,
+            'retry_after'   => 0,
         ];
     }
 
+    // Check if locked
+    if ($row['locked_until'] && strtotime($row['locked_until']) > time()) {
+        $retry = strtotime($row['locked_until']) - time();
+        return [
+            'allowed'       => false,
+            'attempts_left' => 0,
+            'retry_after'   => $retry,
+        ];
+    }
+
+    // If lockout expired, reset
     if ($row['locked_until'] && strtotime($row['locked_until']) <= time()) {
         $stmt = mysqli_prepare($conn,
             "UPDATE `rate_limit` SET `attempts`=1, `locked_until`=NULL, `last_attempt`=? WHERE `ip`=? AND `action`=?");
@@ -167,21 +175,32 @@ function db_rate_limit(mysqli $conn, string $action, string $ip): array {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        return ['allowed' => true, 'attempts_left' => RATE_MAX_ATTEMPTS - 1, 'retry_after' => 0];
+        return [
+            'allowed'       => true,
+            'attempts_left' => RATE_MAX_ATTEMPTS - 1,
+            'retry_after'   => 0,
+        ];
     }
 
+    // Increment attempts
     $new_attempts = $row['attempts'] + 1;
 
     if ($new_attempts >= RATE_MAX_ATTEMPTS) {
+        // Lock
         $stmt = mysqli_prepare($conn,
             "UPDATE `rate_limit` SET `attempts`=?, `locked_until`=?, `last_attempt`=? WHERE `ip`=? AND `action`=?");
         mysqli_stmt_bind_param($stmt, 'issss', $new_attempts, $lockout, $now, $ip, $action);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        return ['allowed' => false, 'attempts_left' => 0, 'retry_after' => RATE_LOCKOUT_SECONDS];
+        return [
+            'allowed'       => false,
+            'attempts_left' => 0,
+            'retry_after'   => RATE_LOCKOUT_SECONDS,
+        ];
     }
 
+    // Update count
     $stmt = mysqli_prepare($conn,
         "UPDATE `rate_limit` SET `attempts`=?, `last_attempt`=? WHERE `ip`=? AND `action`=?");
     mysqli_stmt_bind_param($stmt, 'isss', $new_attempts, $now, $ip, $action);
@@ -195,8 +214,12 @@ function db_rate_limit(mysqli $conn, string $action, string $ip): array {
     ];
 }
 
+/**
+ * Reset DB-based rate limit on successful action.
+ */
 function db_rate_reset(mysqli $conn, string $action, string $ip): void {
-    $stmt = mysqli_prepare($conn, "DELETE FROM `rate_limit` WHERE `ip`=? AND `action`=?");
+    $stmt = mysqli_prepare($conn,
+        "DELETE FROM `rate_limit` WHERE `ip`=? AND `action`=?");
     mysqli_stmt_bind_param($stmt, 'ss', $ip, $action);
     mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);

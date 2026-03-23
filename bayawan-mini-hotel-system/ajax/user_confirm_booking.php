@@ -1,15 +1,15 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_confirm_booking.php
-
+session_start();
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
+require_once '../includes/csrf.php';
+csrf_verify();
+// FIX: session_start() must be called unconditionally at the top of the file,
+// not inside the if(isset($_POST[...])) block. If additional POST actions are
+// ever added to this file, sessions would be unavailable to them.
 
 date_default_timezone_set("Asia/Manila");
-
-// FIX (Bug): session_start() must be called unconditionally at the top,
-// not buried inside a conditional block — otherwise sessions are
-// unavailable for any other action added to this file in the future.
-session_start();
 
 if (isset($_POST['check_availability'])) {
     $frm_data = filteration($_POST);

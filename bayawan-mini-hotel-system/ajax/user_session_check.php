@@ -1,9 +1,11 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_session_check.php
+session_start();
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
+require_once '../includes/csrf.php';
+csrf_verify();
 
-session_start();
 header('Content-Type: application/json');
 
 define('SESSION_TIMEOUT',  30 * 60); // 30 minutes in seconds

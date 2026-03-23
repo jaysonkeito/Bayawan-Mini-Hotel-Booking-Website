@@ -1,4 +1,12 @@
-<?php // bayawan-mini-hotel-system/admin/includes/admin_header.php ?>
+<?php
+// bayawan-mini-hotel-system/admin/includes/admin_header.php
+
+// CSRF: Generate token once for this session and embed in a meta tag.
+// The XHR interceptor script at the bottom of this file reads it and
+// attaches it automatically to every AJAX request fired from any admin page.
+require_once __DIR__ . '/../../includes/csrf.php';
+?>
+<meta name="csrf-token" content="<?= csrf_token() ?>">
 
 <style>
   #dashboard-menu {
@@ -316,7 +324,6 @@
   function applySidebarState(collapsed, animate = true) {
     const mc = getMainContent();
 
-    // ─── Disable animation if navigating while collapsed ───
     if(!animate){
       sidebar.style.transition = 'none';
       if(mc) mc.style.transition = 'none';
@@ -340,31 +347,25 @@
     }
   }
 
-  // ─── Apply saved state on DOMContentLoaded ───
   document.addEventListener('DOMContentLoaded', () => {
     const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    // ─── No animation on page load ───
     applySidebarState(isCollapsed, false);
   });
 
-  // ─── Toggle on button click — WITH animation ───
   toggleBtn.addEventListener('click', () => {
     const nowCollapsed = !sidebar.classList.contains('collapsed');
-    applySidebarState(nowCollapsed, true); // ← animate toggle
+    applySidebarState(nowCollapsed, true);
     localStorage.setItem('sidebarCollapsed', nowCollapsed);
   });
 
-  // ─── Nav link clicks when collapsed — NO animation ───
   document.querySelectorAll('#dashboard-menu .nav-link, #dashboard-menu .menu-btn').forEach(el => {
     el.addEventListener('click', function() {
       if(sidebar.classList.contains('collapsed')){
-        // Instantly remove transition so page load doesn't animate sidebar open
         sidebar.style.transition = 'none';
       }
     });
   });
 
-  // ─── Submenu Toggle ───
   function toggleSubMenu(btn) {
     const subMenu = btn.nextElementSibling;
     if(subMenu.style.maxHeight && subMenu.style.maxHeight !== '0px'){
@@ -374,7 +375,6 @@
     }
   }
 
-  // ─── Auto open submenu if on booking page ───
   const bookingPages = ['new_bookings', 'refund_bookings', 'booking_records'];
   const currentPage  = window.location.pathname;
   const bookingSub   = document.getElementById('bookingSubMenu');
@@ -382,7 +382,6 @@
     bookingSub.style.maxHeight = bookingSub.scrollHeight + 'px';
   }
 
-  // ─── Set active link ───
   function setActive() {
     let a_tags = document.getElementById('dashboard-menu').getElementsByTagName('a');
     for(let i = 0; i < a_tags.length; i++){
@@ -393,4 +392,29 @@
     }
   }
   setActive();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CSRF XHR Interceptor
+     Automatically attaches the CSRF token to every XMLHttpRequest
+     sent from any admin page that includes this header.
+     No changes needed in any individual admin JS file.
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    if (!csrfToken) return;
+
+    var _send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (body) {
+        if (body instanceof FormData) {
+            // FormData requests (file uploads, multi-field forms)
+            body.append('csrf_token', csrfToken);
+        } else if (typeof body === 'string' && body.length > 0) {
+            // URL-encoded string requests (e.g. 'get_all_rooms=1&page=2')
+            body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
+        }
+        _send.call(this, body);
+    };
+})();
 </script>

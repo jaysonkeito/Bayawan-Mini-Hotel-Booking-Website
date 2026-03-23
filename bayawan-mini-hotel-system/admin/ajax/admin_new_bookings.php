@@ -3,7 +3,8 @@
 require('../includes/admin_configuration.php');
 require('../includes/admin_essentials.php');
 require('../../includes/user_email_helper.php');
-
+require_once '../../includes/csrf.php';
+csrf_verify();
 date_default_timezone_set("Asia/Manila");
 adminLogin();
 

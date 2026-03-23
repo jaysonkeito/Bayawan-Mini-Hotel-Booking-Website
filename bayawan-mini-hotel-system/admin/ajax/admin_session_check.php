@@ -2,7 +2,8 @@
 // bayawan-mini-hotel-system/admin/ajax/admin_session_check.php
 require('../includes/admin_configuration.php');
 require('../includes/admin_essentials.php');
-
+require_once '../../includes/csrf.php';
+csrf_verify();
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 

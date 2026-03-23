@@ -8,6 +8,8 @@
 // ─────────────────────────────────────────────────────────────────────
 
 if (session_status() === PHP_SESSION_NONE) session_start();
+require_once '../includes/csrf.php';
+csrf_verify();
 
 header('Content-Type: text/plain');
 

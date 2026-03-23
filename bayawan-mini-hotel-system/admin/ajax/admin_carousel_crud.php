@@ -3,6 +3,8 @@
   
   require('../includes/admin_essentials.php');
   require('../includes/admin_configuration.php');
+  require_once '../../includes/csrf.php';
+  csrf_verify();
   adminLogin();
 
   if(isset($_POST['add_image']))

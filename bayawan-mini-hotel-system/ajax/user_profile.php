@@ -1,36 +1,25 @@
 <?php
 // bayawan-mini-hotel-system/ajax/user_profile.php
-
+session_start();
 require('../admin/includes/admin_configuration.php');
 require('../admin/includes/admin_essentials.php');
+require_once '../includes/csrf.php';
+csrf_verify();
 
 date_default_timezone_set("Asia/Manila");
-session_start();
 
 if (!(isset($_SESSION['login']) && $_SESSION['login'] == true)) {
     echo 0;
     exit;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  CSRF VALIDATION
-//  Every mutating POST in this file is verified against the
-//  session token generated in user_login_register.php.
-// ─────────────────────────────────────────────────────────────
-function verify_csrf(): void {
-    $token = $_POST['csrf_token'] ?? '';
-    if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
-        http_response_code(403);
-        exit('Invalid request token. Please refresh the page and try again.');
-    }
-}
-
 
 // ─────────────────────────────────────────────────────────────
 //  Complete Google Profile
+//  Saves the four fields Google OAuth cannot supply, then clears
+//  the $_SESSION['google_new'] flag so the modal never shows again.
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['complete_google_profile'])) {
-    verify_csrf();
     $frm_data = filteration($_POST);
 
     $phone   = trim($frm_data['phonenum'] ?? '');
@@ -52,11 +41,15 @@ if (isset($_POST['complete_google_profile'])) {
         exit;
     }
 
-    // FIX (Bug): Reject future dates AND enforce minimum age of 18 years
+    // FIX: DOB validation was too loose — only rejected dates within the past year.
+    // A user could submit a future date or a date only 2 years ago with no error.
+    // Now we:
+    //   1. Reject any future date.
+    //   2. Require the user to be at least 18 years old.
     $dob_ts  = strtotime($dob);
     $min_age = strtotime('-18 years');
     if (!$dob_ts || $dob_ts > time() || $dob_ts > $min_age) {
-        echo 'Please enter a valid date of birth (must be 18 years or older).';
+        echo 'Please enter a valid date of birth (must be 18 or older).';
         exit;
     }
 
@@ -79,7 +72,6 @@ if (isset($_POST['complete_google_profile'])) {
 //  Basic Information Update
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['info_form'])) {
-    verify_csrf();
     $frm_data = filteration($_POST);
 
     $u_exist = select(
@@ -119,8 +111,6 @@ if (isset($_POST['info_form'])) {
 //  Profile Picture Update
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['profile_form'])) {
-    verify_csrf();
-
     $img = uploadUserImage($_FILES['profile']);
 
     if ($img === 'inv_img') {
@@ -155,17 +145,34 @@ if (isset($_POST['profile_form'])) {
 
 // ─────────────────────────────────────────────────────────────
 //  Password Update
+//
+//  Reads all three password values directly from raw $_POST
+//  instead of through filteration(). filteration() calls
+//  htmlspecialchars() which corrupts passwords containing
+//  &, <, >, ", or ' — the raw value is needed both for
+//  password_verify() to work correctly and to ensure the
+//  newly hashed password matches what the user types at login.
 // ─────────────────────────────────────────────────────────────
 if (isset($_POST['pass_form'])) {
-    verify_csrf();
 
     $current_pass = $_POST['current_pass'] ?? '';
     $new_pass     = $_POST['new_pass']     ?? '';
     $confirm_pass = $_POST['confirm_pass'] ?? '';
 
-    if (empty($current_pass)) { echo 'current_required'; exit; }
-    if ($new_pass !== $confirm_pass) { echo 'mismatch'; exit; }
-    if (empty($new_pass)) { echo 'empty_pass'; exit; }
+    if (empty($current_pass)) {
+        echo 'current_required';
+        exit;
+    }
+
+    if ($new_pass !== $confirm_pass) {
+        echo 'mismatch';
+        exit;
+    }
+
+    if (empty($new_pass)) {
+        echo 'empty_pass';
+        exit;
+    }
 
     $user_q    = select(
         "SELECT `password` FROM `user_cred` WHERE `id` = ? LIMIT 1",

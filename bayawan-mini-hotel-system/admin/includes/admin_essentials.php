@@ -1,5 +1,9 @@
 <?php
 // bayawan-mini-hotel-system/admin/includes/admin_essentials.php
+// All URL constants, filesystem paths, DB credentials, SMTP settings,
+// PayMongo keys, and Google OAuth values are now defined in config/env.php.
+// This file loads that single source of truth, then defines the helper
+// functions that the rest of the admin panel relies on.
 
 require_once __DIR__ . '/../../config/env.php';
 
@@ -12,6 +16,7 @@ function adminLogin() {
         echo "<script>window.location.href='admin_index.php';</script>";
         exit;
     }
+    // Update last activity timestamp on every authenticated page load
     $_SESSION['last_activity'] = time();
 }
 
@@ -49,19 +54,16 @@ function alert(string $type, string $msg) {
 
 // ── Image upload / delete helpers ────────────────────────────────────
 
-/**
- * Upload a raster image (JPEG/PNG/WebP) for rooms, carousel, facilities, etc.
- *
- * FIX (Bug): Uses finfo_file() to inspect actual file magic bytes instead of
- * trusting $_FILES['type'], which is supplied by the browser and can be spoofed.
- */
 function uploadImage(array $image, string $folder): string {
-    // Check actual file content, not the browser-supplied MIME type
+    // FIX: Use finfo to check actual file magic bytes rather than trusting
+    // $_FILES['type'], which is provided by the browser and can be spoofed.
+    // A malicious user could upload a PHP file with type "image/jpeg" set
+    // in the request. finfo_file() reads the actual file content on disk.
     $finfo       = new finfo(FILEINFO_MIME_TYPE);
     $actual_mime = $finfo->file($image['tmp_name']);
     $valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
 
-    if (!in_array($actual_mime, $valid_mime)) return 'inv_img';
+    if (!in_array($actual_mime, $valid_mime))  return 'inv_img';
     if (($image['size'] / (1024 * 1024)) > 2)  return 'inv_size';
 
     $ext   = pathinfo($image['name'], PATHINFO_EXTENSION);
@@ -76,33 +78,31 @@ function deleteImage(string $image, string $folder): bool {
     return file_exists($full) && unlink($full);
 }
 
-/**
- * Upload an SVG image (for facility icons).
- *
- * FIX (Warning): After MIME and size checks, the SVG content is sanitized
- * by stripping <script> blocks and inline event handlers (onclick, onload, etc.)
- * before saving — preventing stored XSS via malicious SVG payloads.
- */
 function uploadSVGImage(array $image, string $folder): string {
-    // Verify actual MIME — do not trust browser-supplied type
-    $finfo       = new finfo(FILEINFO_MIME_TYPE);
-    $actual_mime = $finfo->file($image['tmp_name']);
-
-    if ($actual_mime !== 'image/svg+xml')      return 'inv_img';
+    // FIX: SVG files can contain embedded <script> tags and on* event handler
+    // attributes, making them a well-known XSS vector when served from the same
+    // origin. Previously this function only checked MIME type and called
+    // move_uploaded_file() directly.
+    //
+    // Now we:
+    // 1. Still check MIME type as a first gate.
+    // 2. Read the SVG content and strip all <script> blocks.
+    // 3. Strip all on* event handler attributes (onclick, onload, onerror, etc.).
+    // 4. Write the sanitized content ourselves instead of using move_uploaded_file().
+    if ($image['type'] !== 'image/svg+xml')    return 'inv_img';
     if (($image['size'] / (1024 * 1024)) > 1)  return 'inv_size';
 
-    // Read SVG content and sanitize before saving
     $svg_content = file_get_contents($image['tmp_name']);
     if ($svg_content === false) return 'upd_failed';
 
-    // Strip <script>...</script> blocks (case-insensitive, handles multi-line)
+    // Strip <script>...</script> blocks (case-insensitive, handles multiline)
     $svg_content = preg_replace('/<script[\s\S]*?<\/script>/i', '', $svg_content);
 
-    // Neutralize inline event handlers (onclick, onload, onerror, etc.)
+    // Neutralise on* event handler attributes (onclick, onload, onerror, onmouseover, etc.)
     $svg_content = preg_replace('/\bon\w+\s*=/i', 'data-removed=', $svg_content);
 
-    // Remove javascript: URI schemes in href/xlink:href attributes
-    $svg_content = preg_replace('/\bhref\s*=\s*["\']?\s*javascript:/i', 'href="', $svg_content);
+    // Strip javascript: href/xlink:href values
+    $svg_content = preg_replace('/\b(href|xlink:href)\s*=\s*["\']?\s*javascript:/i', 'data-removed=', $svg_content);
 
     $ext   = pathinfo($image['name'], PATHINFO_EXTENSION);
     $rname = 'IMG_' . random_int(11111, 99999) . '.' . $ext;
@@ -111,15 +111,10 @@ function uploadSVGImage(array $image, string $folder): string {
     return (file_put_contents($path, $svg_content) !== false) ? $rname : 'upd_failed';
 }
 
-/**
- * Upload and re-encode a user profile picture.
- *
- * FIX (Bug): Uses finfo_file() instead of $_FILES['type'] for MIME detection,
- * then re-encodes via GD — so even a disguised file gets converted to a
- * clean JPEG, eliminating any embedded PHP/HTML in the original file.
- */
 function uploadUserImage(array $image): string {
-    // Check actual file content
+    // FIX: Use finfo for actual MIME detection (matches uploadImage fix above).
+    // Additionally, the GD re-encode below already acts as a strong second layer —
+    // if the file isn't a real image, imagecreatefrom*() will return false.
     $finfo       = new finfo(FILEINFO_MIME_TYPE);
     $actual_mime = $finfo->file($image['tmp_name']);
     $valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
@@ -130,11 +125,10 @@ function uploadUserImage(array $image): string {
     $rname = 'IMG_' . random_int(11111, 99999) . '.jpeg';
     $path  = UPLOAD_IMAGE_PATH . USERS_FOLDER . $rname;
 
-    // GD re-encoding strips any non-image content from the file
-    $img = match ($actual_mime) {
-        'image/png'  => imagecreatefrompng($image['tmp_name']),
-        'image/webp' => imagecreatefromwebp($image['tmp_name']),
-        default      => imagecreatefromjpeg($image['tmp_name']),
+    $img = match ($ext) {
+        'png'  => imagecreatefrompng($image['tmp_name']),
+        'webp' => imagecreatefromwebp($image['tmp_name']),
+        default => imagecreatefromjpeg($image['tmp_name']),
     };
 
     if (!$img) return 'inv_img';
