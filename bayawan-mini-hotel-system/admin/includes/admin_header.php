@@ -1,9 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/admin/includes/admin_header.php
-
-// CSRF: Generate token once for this session and embed in a meta tag.
-// The XHR interceptor script at the bottom of this file reads it and
-// attaches it automatically to every AJAX request fired from any admin page.
 require_once __DIR__ . '/../../includes/csrf.php';
 ?>
 <meta name="csrf-token" content="<?= csrf_token() ?>">
@@ -404,14 +400,11 @@ require_once __DIR__ . '/../../includes/csrf.php';
 (function () {
     var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     if (!csrfToken) return;
-
     var _send = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function (body) {
         if (body instanceof FormData) {
-            // FormData requests (file uploads, multi-field forms)
             body.append('csrf_token', csrfToken);
         } else if (typeof body === 'string' && body.length > 0) {
-            // URL-encoded string requests (e.g. 'get_all_rooms=1&page=2')
             body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
         }
         _send.call(this, body);

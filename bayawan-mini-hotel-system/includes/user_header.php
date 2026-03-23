@@ -1,9 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/includes/user_header.php
-
-// CSRF: Generate token once for this session and embed in a meta tag.
-// The XHR interceptor script below reads it and attaches it automatically
-// to every AJAX request fired from any page that includes this header.
 require_once __DIR__ . '/csrf.php';
 ?>
 <meta name="csrf-token" content="<?= csrf_token() ?>">
@@ -397,18 +393,16 @@ require_once __DIR__ . '/csrf.php';
      sent from any page that includes this header. No changes needed
      in any individual JS file — this covers all of them globally.
      ═══════════════════════════════════════════════════════════════ -->
+
 <script>
 (function () {
     var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     if (!csrfToken) return;
-
     var _send = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function (body) {
         if (body instanceof FormData) {
-            // FormData requests (file uploads, multi-field forms)
             body.append('csrf_token', csrfToken);
         } else if (typeof body === 'string' && body.length > 0) {
-            // URL-encoded string requests (e.g. 'get_all_rooms=1&page=2')
             body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
         }
         _send.call(this, body);

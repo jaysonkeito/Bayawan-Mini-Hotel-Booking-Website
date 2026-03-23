@@ -6,11 +6,12 @@ require_once '../admin/includes/admin_configuration.php';
 require_once '../includes/vendor/autoload.php';
 require_once '../includes/rate_limiter.php';
 require_once '../includes/csrf.php';
-csrf_verify();
 
 use PHPMailer\PHPMailer\PHPMailer;
 
 header('Content-Type: text/plain; charset=utf-8');
+
+csrf_verify();
 
 function sendEmail($to, $subject, $body) {
     $mail = new PHPMailer(true);
@@ -40,9 +41,6 @@ $action = $_POST['action'] ?? '';
 
 switch ($action) {
 
-// ─────────────────────────────────────────────────────────────
-//  LOGIN
-// ─────────────────────────────────────────────────────────────
 case 'login':
     $rl = session_rate_limit('user_login');
     if (!$rl['allowed']) {
@@ -67,7 +65,6 @@ case 'login':
 
     if ($row = $res->fetch_assoc()) {
         if (password_verify($pass, $row['password'])) {
-            // ── Success — reset rate limit ──
             session_rate_reset('user_login');
 
             $_SESSION['login']     = true;
@@ -84,10 +81,7 @@ case 'login':
                 setcookie('remember_token', $token, time()+2592000, '/', '', true, true);
             }
 
-            // FIX 1: Use a prepared statement for last_login UPDATE
-            // Previously used raw string interpolation: "... WHERE id = {$row['id']}"
-            // Even though the value comes from the DB, this bypasses the prepared-statement
-            // convention used everywhere else and is unsafe if the pattern is ever reused.
+            // FIX 1: prepared statement instead of raw string interpolation
             $upd = $conn->prepare("UPDATE user_cred SET last_login = NOW() WHERE id = ?");
             $upd->bind_param("i", $row['id']);
             $upd->execute();
@@ -105,9 +99,6 @@ case 'login':
     break;
 
 
-// ─────────────────────────────────────────────────────────────
-//  SEND OTP (REGISTER)
-// ─────────────────────────────────────────────────────────────
 case 'send_otp_register':
     $rl = session_rate_limit('register');
     if (!$rl['allowed']) {
@@ -147,9 +138,6 @@ case 'send_otp_register':
     break;
 
 
-// ─────────────────────────────────────────────────────────────
-//  VERIFY OTP
-// ─────────────────────────────────────────────────────────────
 case 'verify_otp_register':
     $rl = session_rate_limit('otp');
     if (!$rl['allowed']) {
@@ -164,9 +152,7 @@ case 'verify_otp_register':
         die("Code expired or invalid session");
     }
 
-    // FIX 2: Use strict equality (===) for security-sensitive OTP comparison.
-    // PHP's loose == causes unexpected type-coercion matches (e.g. "0" == false).
-    // Cast both sides to string to ensure consistent comparison.
+    // FIX 2: strict === instead of ==
     if ($otp === (string)$_SESSION['reg_otp']) {
         session_rate_reset('otp');
         echo "OTP verified";
@@ -178,9 +164,6 @@ case 'verify_otp_register':
     break;
 
 
-// ─────────────────────────────────────────────────────────────
-//  COMPLETE REGISTER
-// ─────────────────────────────────────────────────────────────
 case 'complete_register':
     $rl = session_rate_limit('register_submit');
     if (!$rl['allowed']) {
@@ -255,14 +238,8 @@ case 'complete_register':
     break;
 
 
-// ─────────────────────────────────────────────────────────────
-//  RECOVER PASSWORD
-// ─────────────────────────────────────────────────────────────
 case 'recover_password':
-    // FIX 3: Password reset now uses dedicated reset_token/reset_expires columns
-    // (separate from remember_token) and checks expiry before allowing the reset.
-    // Previously: used remember_token column (invalidated all "Remember Me" sessions)
-    //             and had no expiry check (link was valid forever).
+    // FIX 3: use dedicated reset_token/reset_expires columns + expiry check
     $email = trim($_POST['email'] ?? '');
     $token = trim($_POST['token'] ?? '');
     $pass  = trim($_POST['pass']  ?? '');
@@ -282,7 +259,6 @@ case 'recover_password':
     $row      = $res->fetch_assoc();
     $new_hash = password_hash($pass, PASSWORD_DEFAULT);
 
-    // Clear reset token after use so it cannot be reused
     $upd = $conn->prepare(
         "UPDATE user_cred SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?"
     );
@@ -292,13 +268,8 @@ case 'recover_password':
     break;
 
 
-// ─────────────────────────────────────────────────────────────
-//  FORGOT PASSWORD
-// ─────────────────────────────────────────────────────────────
 case 'forgot_pass':
-    // FIX 3 (continued): Store reset token in dedicated reset_token/reset_expires
-    // columns instead of reusing remember_token. This means triggering a password
-    // reset no longer invalidates existing "Remember Me" sessions for that user.
+    // FIX 3: store in reset_token/reset_expires, not remember_token
     $email = trim($_POST['email'] ?? '');
 
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) exit("inv_email");

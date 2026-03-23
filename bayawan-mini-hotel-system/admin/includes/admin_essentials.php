@@ -1,10 +1,5 @@
 <?php
 // bayawan-mini-hotel-system/admin/includes/admin_essentials.php
-// All URL constants, filesystem paths, DB credentials, SMTP settings,
-// PayMongo keys, and Google OAuth values are now defined in config/env.php.
-// This file loads that single source of truth, then defines the helper
-// functions that the rest of the admin panel relies on.
-
 require_once __DIR__ . '/../../config/env.php';
 
 
@@ -16,7 +11,6 @@ function adminLogin() {
         echo "<script>window.location.href='admin_index.php';</script>";
         exit;
     }
-    // Update last activity timestamp on every authenticated page load
     $_SESSION['last_activity'] = time();
 }
 
@@ -55,10 +49,7 @@ function alert(string $type, string $msg) {
 // ── Image upload / delete helpers ────────────────────────────────────
 
 function uploadImage(array $image, string $folder): string {
-    // FIX: Use finfo to check actual file magic bytes rather than trusting
-    // $_FILES['type'], which is provided by the browser and can be spoofed.
-    // A malicious user could upload a PHP file with type "image/jpeg" set
-    // in the request. finfo_file() reads the actual file content on disk.
+    // FIX: finfo checks actual file magic bytes, not browser-supplied type
     $finfo       = new finfo(FILEINFO_MIME_TYPE);
     $actual_mime = $finfo->file($image['tmp_name']);
     $valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
@@ -79,29 +70,15 @@ function deleteImage(string $image, string $folder): bool {
 }
 
 function uploadSVGImage(array $image, string $folder): string {
-    // FIX: SVG files can contain embedded <script> tags and on* event handler
-    // attributes, making them a well-known XSS vector when served from the same
-    // origin. Previously this function only checked MIME type and called
-    // move_uploaded_file() directly.
-    //
-    // Now we:
-    // 1. Still check MIME type as a first gate.
-    // 2. Read the SVG content and strip all <script> blocks.
-    // 3. Strip all on* event handler attributes (onclick, onload, onerror, etc.).
-    // 4. Write the sanitized content ourselves instead of using move_uploaded_file().
+    // FIX: strip <script> tags and on* event handlers before saving
     if ($image['type'] !== 'image/svg+xml')    return 'inv_img';
     if (($image['size'] / (1024 * 1024)) > 1)  return 'inv_size';
 
     $svg_content = file_get_contents($image['tmp_name']);
     if ($svg_content === false) return 'upd_failed';
 
-    // Strip <script>...</script> blocks (case-insensitive, handles multiline)
     $svg_content = preg_replace('/<script[\s\S]*?<\/script>/i', '', $svg_content);
-
-    // Neutralise on* event handler attributes (onclick, onload, onerror, onmouseover, etc.)
     $svg_content = preg_replace('/\bon\w+\s*=/i', 'data-removed=', $svg_content);
-
-    // Strip javascript: href/xlink:href values
     $svg_content = preg_replace('/\b(href|xlink:href)\s*=\s*["\']?\s*javascript:/i', 'data-removed=', $svg_content);
 
     $ext   = pathinfo($image['name'], PATHINFO_EXTENSION);
@@ -112,9 +89,7 @@ function uploadSVGImage(array $image, string $folder): string {
 }
 
 function uploadUserImage(array $image): string {
-    // FIX: Use finfo for actual MIME detection (matches uploadImage fix above).
-    // Additionally, the GD re-encode below already acts as a strong second layer —
-    // if the file isn't a real image, imagecreatefrom*() will return false.
+    // FIX: finfo for actual MIME detection
     $finfo       = new finfo(FILEINFO_MIME_TYPE);
     $actual_mime = $finfo->file($image['tmp_name']);
     $valid_mime  = ['image/jpeg', 'image/png', 'image/webp'];
