@@ -398,30 +398,58 @@ require_once __DIR__ . '/csrf.php';
 (function () {
     var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     if (!csrfToken) return;
+
+    // ── XHR interceptor ──────────────────────────────────────
     var _send = XMLHttpRequest.prototype.send;
     var _open = XMLHttpRequest.prototype.open;
+    var _currentMethod = 'GET';
     var _currentUrl = '';
 
-    // Capture the URL on open so we can append token to GET requests
     XMLHttpRequest.prototype.open = function(method, url) {
+        _currentMethod = method.toUpperCase();
         _currentUrl = url;
         _open.apply(this, arguments);
     };
 
     XMLHttpRequest.prototype.send = function (body) {
-        if (body instanceof FormData) {
-            // POST with FormData
-            body.append('csrf_token', csrfToken);
-        } else if (typeof body === 'string' && body.length > 0) {
-            // POST with URL-encoded string
-            body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
-        } else if (!body) {
-            // GET request — token goes in the URL
+        if (_currentMethod === 'POST') {
+            if (body instanceof FormData) {
+                body.append('csrf_token', csrfToken);
+            } else if (typeof body === 'string' && body.length > 0) {
+                body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
+            }
+        } else if (_currentMethod === 'GET') {
             var sep = _currentUrl.indexOf('?') === -1 ? '?' : '&';
             _currentUrl = _currentUrl + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
             _open.call(this, 'GET', _currentUrl, true);
         }
         _send.call(this, body);
+    };
+
+    // ── fetch() interceptor ───────────────────────────────────
+    var _fetch = window.fetch;
+    window.fetch = function(input, init) {
+        init = init || {};
+        var method = (init.method || 'GET').toUpperCase();
+
+        if (method === 'POST') {
+            if (init.body instanceof FormData) {
+                init.body.append('csrf_token', csrfToken);
+            } else if (typeof init.body === 'string') {
+                init.body = init.body + '&csrf_token=' + encodeURIComponent(csrfToken);
+            } else {
+                // No body — create one with just the token
+                var fd = new FormData();
+                fd.append('csrf_token', csrfToken);
+                init.body = fd;
+            }
+        } else if (method === 'GET') {
+            var url = (typeof input === 'string') ? input : input.url;
+            var sep = url.indexOf('?') === -1 ? '?' : '&';
+            input = url + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
+        }
+
+        return _fetch.call(this, input, init);
     };
 })();
 </script>

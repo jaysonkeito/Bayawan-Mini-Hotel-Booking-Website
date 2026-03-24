@@ -80,7 +80,7 @@ if ($is_cart) {
         }
     }
 
-    if ($status === 'failed') {
+    if ($status === 'failed' && $verified_status !== 'success') {
         $verified_status = 'failed';
         $resp_msg        = 'Payment failed or was cancelled.';
     }
@@ -189,7 +189,7 @@ if (!empty($session_id)) {
     }
 }
 
-if ($status === 'failed') {
+if ($status === 'failed' && $verified_status !== 'success') {
     $verified_status = 'failed';
     $resp_msg        = 'Payment failed or was cancelled.';
 }
