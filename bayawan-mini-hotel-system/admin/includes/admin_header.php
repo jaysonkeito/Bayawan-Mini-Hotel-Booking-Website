@@ -274,6 +274,13 @@ require_once __DIR__ . '/../../includes/csrf.php';
           <span class="menu-text">Rooms</span>
         </a>
       </li>
+      <!-- Add this right after -->
+      <li class="nav-item">
+        <a class="nav-link" href="admin_room_status.php">
+          <i class="bi bi-grid-3x3-gap"></i>
+          <span class="menu-text">Room Status</span>
+        </a>
+      </li>
       <li class="nav-item">
         <a class="nav-link" href="admin_features_facilities.php">
           <i class="bi bi-stars"></i>
