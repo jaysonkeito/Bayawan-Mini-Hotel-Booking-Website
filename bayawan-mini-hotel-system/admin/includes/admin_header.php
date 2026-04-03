@@ -274,13 +274,6 @@ require_once __DIR__ . '/../../includes/csrf.php';
           <span class="menu-text">Rooms</span>
         </a>
       </li>
-      <!-- Add this right after -->
-      <li class="nav-item">
-        <a class="nav-link" href="admin_room_status.php">
-          <i class="bi bi-grid-3x3-gap"></i>
-          <span class="menu-text">Room Status</span>
-        </a>
-      </li>
       <li class="nav-item">
         <a class="nav-link" href="admin_features_facilities.php">
           <i class="bi bi-stars"></i>
@@ -313,6 +306,63 @@ require_once __DIR__ . '/../../includes/csrf.php';
           <i class="bi bi-shield-lock"></i>
           <span class="menu-text">2FA Setup</span>
         </a>
+      </li>
+
+      <!-- Room Status — both roles -->
+      <li class="nav-item">
+        <a class="nav-link" href="admin_room_status.php">
+          <i class="bi bi-grid-3x3-gap"></i>
+          <span class="menu-text">Room Status</span>
+        </a>
+      </li>
+ 
+      <!-- Food Service — both roles, admin sees full submenu -->
+      <li class="nav-item">
+        <button class="menu-btn" onclick="toggleSubMenu(this)">
+          <i class="bi bi-cup-hot"></i>
+          <span class="menu-text">Food Service</span>
+          <i class="bi bi-caret-down-fill ms-auto menu-text" style="font-size:0.7rem;"></i>
+        </button>
+        <div class="sub-menu" id="foodSubMenu">
+          <a class="nav-link" href="admin_food_orders.php">
+            <i class="bi bi-bag-check"></i>
+            <span class="menu-text">
+              Food Orders
+              <?php
+                $fo_badge_q = "SELECT COUNT(*) AS cnt FROM food_orders WHERE status IN ('pending','preparing')";
+                $fo_badge   = (int) mysqli_fetch_assoc(mysqli_query($conn, $fo_badge_q))['cnt'];
+                if ($fo_badge > 0) {
+                    echo "<span class='badge bg-warning text-dark ms-1'>{$fo_badge}</span>";
+                }
+              ?>
+            </span>
+          </a>
+          <a class="nav-link" href="admin_checkout_clearance.php">
+            <i class="bi bi-door-closed"></i>
+            <span class="menu-text">Checkout Clearance</span>
+          </a>
+          <?php if (isAdmin()) { ?>
+          <a class="nav-link" href="admin_food_menu.php">
+            <i class="bi bi-menu-button-wide"></i>
+            <span class="menu-text">Food Menu</span>
+          </a>
+          <a class="nav-link" href="admin_inventory.php">
+            <i class="bi bi-boxes"></i>
+            <span class="menu-text">
+              Inventory
+              <?php
+                $inv_badge_q = "SELECT COUNT(*) AS cnt FROM food_menu fm
+                                LEFT JOIN food_inventory fi ON fm.id = fi.food_id
+                                WHERE fm.removed = 0 AND fi.stock_qty <= fi.low_stock_threshold";
+                $inv_badge   = (int) mysqli_fetch_assoc(mysqli_query($conn, $inv_badge_q))['cnt'];
+                if ($inv_badge > 0) {
+                    echo "<span class='badge bg-danger ms-1'>{$inv_badge}</span>";
+                }
+              ?>
+            </span>
+          </a>
+          <?php } ?>
+        </div>
       </li>
 
       <!-- Logout — both roles -->
@@ -390,11 +440,18 @@ require_once __DIR__ . '/../../includes/csrf.php';
     }
   }
 
-  const bookingPages = ['new_bookings', 'refund_bookings', 'booking_records'];
-  const currentPage  = window.location.pathname;
+  // Auto-open Bookings submenu
+  const bookingPages = ['new_bookings', 'refund_bookings', 'booking_records', 'calendar'];
   const bookingSub   = document.getElementById('bookingSubMenu');
-  if(bookingPages.some(p => currentPage.includes(p))){
+  if (bookingPages.some(p => currentPage.includes(p))) {
     bookingSub.style.maxHeight = bookingSub.scrollHeight + 'px';
+  }
+ 
+  // Auto-open Food Service submenu
+  const foodPages = ['food_orders', 'food_menu', 'inventory', 'checkout_clearance'];
+  const foodSub   = document.getElementById('foodSubMenu');
+  if (foodSub && foodPages.some(p => currentPage.includes(p))) {
+    foodSub.style.maxHeight = foodSub.scrollHeight + 'px';
   }
 
   function setActive() {

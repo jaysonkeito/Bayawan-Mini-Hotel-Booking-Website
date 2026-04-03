@@ -121,8 +121,16 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(r => r.text())
             .then(text => {
                 const resp = text.trim();
-                if (resp === 'success') {
-                    window.location.reload();
+                if (t === 'success') {
+                    // FIX: redirect to the originally-intended page if the user
+                    // clicked "Book Now" while logged out (saved by checkLoginToBook).
+                    const redirectTarget = sessionStorage.getItem('redirectAfterLogin');
+                    if (redirectTarget) {
+                        sessionStorage.removeItem('redirectAfterLogin');
+                        window.location.href = redirectTarget;
+                    } else {
+                        window.location.reload();
+                    }
                 } else {
                     setTimeout(() => alert('error', resp || 'Login failed. Please try again.'), 50);
                 }

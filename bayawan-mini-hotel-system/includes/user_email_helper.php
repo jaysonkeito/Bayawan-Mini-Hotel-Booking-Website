@@ -1,13 +1,16 @@
 <?php
 // bayawan-mini-hotel-system/includes/user_email_helper.php
+// FIX: All subject lines now use plain ASCII hyphens ( - ) instead of the
+//      em-dash (–) that was getting mangled to â€" in some email clients.
+//      Root cause: PHPMailer encodes Subject as UTF-8 quoted-printable,
+//      but some clients misread the raw bytes. Using a plain hyphen is the
+//      safest, universally-readable separator.
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-/**
- * Core mailer. All template functions call this.
- */
 function sendHotelEmail(string $to, string $subject, string $body): bool {
     $mail = new PHPMailer(true);
     try {
@@ -18,6 +21,7 @@ function sendHotelEmail(string $to, string $subject, string $body): bool {
         $mail->Password   = SMTP_PASS;
         $mail->SMTPSecure = 'tls';
         $mail->Port       = 587;
+        $mail->CharSet    = 'UTF-8';   // ensure UTF-8 is set explicitly
 
         $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
         $mail->addAddress($to);
@@ -32,9 +36,6 @@ function sendHotelEmail(string $to, string $subject, string $body): bool {
     }
 }
 
-/**
- * Wraps any email body in a consistent hotel-branded HTML shell.
- */
 function wrapEmailTemplate(string $title, string $content): string {
     $year = date('Y');
     return <<<HTML
@@ -78,9 +79,6 @@ function wrapEmailTemplate(string $title, string $content): string {
     HTML;
 }
 
-/**
- * Reusable HTML row for booking summary tables inside emails.
- */
 function emailTableRow(string $label, string $value): string {
     return <<<HTML
     <tr>
@@ -123,26 +121,25 @@ function sendBookingConfirmationEmail(array $d): bool {
     <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:12px 16px;border-radius:4px;margin-bottom:20px;">
       <p style="margin:0;font-size:13px;color:#7a5800;">
         <strong>Cancellation Policy:</strong><br>
-        ✅ 72+ hours before check-in — Full refund<br>
-        ⚠️ 24–72 hours before check-in — 50% of first night charged<br>
-        ❌ Less than 24 hours — First night forfeited
+        &#10003; 72+ hours before check-in - Full refund<br>
+        &#9888; 24-72 hours before check-in - 50% of first night charged<br>
+        &#10007; Less than 24 hours - First night forfeited
       </p>
     </div>
     <p style="margin:0;font-size:13px;color:#999;">Thank you for choosing Bayawan Mini Hotel!</p>
     HTML;
 
-    return sendHotelEmail($d['email'], 'Booking Confirmed – ' . $d['order_id'], $body);
+    // FIX: plain hyphen instead of em-dash (–) to avoid â€" encoding artifact
+    return sendHotelEmail($d['email'], 'Booking Confirmed - ' . $d['order_id'], $body);
 }
 
 // ─────────────────────────────────────────────
 //  2. CANCELLATION NOTICE
-//     Now includes refund_amt and policy_msg
 // ─────────────────────────────────────────────
 function sendGuestCancellationEmail(array $d): bool {
     $checkin  = date('F j, Y', strtotime($d['check_in']));
     $checkout = date('F j, Y', strtotime($d['check_out']));
 
-    // Use refund_amt if available, otherwise fall back to trans_amt
     $refund_amt  = isset($d['refund_amt']) && $d['refund_amt'] !== null
         ? (float) $d['refund_amt']
         : (float) $d['trans_amt'];
@@ -159,19 +156,12 @@ function sendGuestCancellationEmail(array $d): bool {
     $rows .= emailTableRow('Penalty',       $penalty_amt > 0 ? '&#8369;' . number_format($penalty_amt, 2) : 'None');
     $rows .= emailTableRow('Refund Amount', '&#8369;' . number_format($refund_amt, 2));
 
-    // Color the refund box based on amount
     if ($refund_amt >= $paid_amt) {
-        $refund_color  = '#e8f8f5';
-        $refund_border = '#2ec1ac';
-        $refund_text   = '#0f6e56';
+        $rc = '#e8f8f5'; $rb = '#2ec1ac'; $rt = '#0f6e56';
     } elseif ($refund_amt > 0) {
-        $refund_color  = '#fff8e1';
-        $refund_border = '#f9a825';
-        $refund_text   = '#7a5800';
+        $rc = '#fff8e1'; $rb = '#f9a825'; $rt = '#7a5800';
     } else {
-        $refund_color  = '#fef3f2';
-        $refund_border = '#e74c3c';
-        $refund_text   = '#a93226';
+        $rc = '#fef3f2'; $rb = '#e74c3c'; $rt = '#a93226';
     }
 
     $body = <<<HTML
@@ -182,8 +172,8 @@ function sendGuestCancellationEmail(array $d): bool {
     <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eee;border-radius:6px;overflow:hidden;margin-bottom:24px;">
       {$rows}
     </table>
-    <div style="background:{$refund_color};border-left:4px solid {$refund_border};padding:12px 16px;border-radius:4px;margin-bottom:20px;">
-      <p style="margin:0;font-size:13px;color:{$refund_text};">
+    <div style="background:{$rc};border-left:4px solid {$rb};padding:12px 16px;border-radius:4px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:{$rt};">
         <strong>Cancellation Policy Applied:</strong><br>
         {$policy_msg}
       </p>
@@ -191,7 +181,8 @@ function sendGuestCancellationEmail(array $d): bool {
     <p style="margin:0;font-size:13px;color:#999;">We hope to see you again soon!</p>
     HTML;
 
-    return sendHotelEmail($d['email'], 'Booking Cancelled – ' . $d['order_id'], $body);
+    // FIX: plain hyphen
+    return sendHotelEmail($d['email'], 'Booking Cancelled - ' . $d['order_id'], $body);
 }
 
 // ─────────────────────────────────────────────
@@ -226,12 +217,12 @@ function sendArrivalConfirmationEmail(array $d): bool {
     <p style="margin:0;font-size:13px;color:#999;">Thank you for staying at Bayawan Mini Hotel!</p>
     HTML;
 
-    return sendHotelEmail($d['email'], 'Your Room is Ready – ' . $d['room_name'], $body);
+    // FIX: plain hyphen, no em-dash
+    return sendHotelEmail($d['email'], 'Your Room is Ready - ' . $d['room_name'], $body);
 }
 
 // ─────────────────────────────────────────────
 //  4. REFUND PROCESSED
-//     Now shows actual refund_amt
 // ─────────────────────────────────────────────
 function sendRefundProcessedEmail(array $d): bool {
     $checkin  = date('F j, Y', strtotime($d['check_in']));
@@ -266,5 +257,42 @@ function sendRefundProcessedEmail(array $d): bool {
     <p style="margin:0;font-size:13px;color:#999;">We hope to welcome you again at Bayawan Mini Hotel!</p>
     HTML;
 
-    return sendHotelEmail($d['email'], 'Refund Processed – ' . $d['order_id'], $body);
+    // FIX: plain hyphen
+    return sendHotelEmail($d['email'], 'Refund Processed - ' . $d['order_id'], $body);
+}
+
+// ─────────────────────────────────────────────
+//  5. FOOD ORDER RECEIVED (new)
+//     Sent to guest when staff confirms their order
+// ─────────────────────────────────────────────
+function sendFoodOrderConfirmationEmail(array $d): bool {
+    // $d keys: email, user_name, order_id (food), room_no, items (array), total_amount
+    $item_rows = '';
+    foreach ($d['items'] as $item) {
+        $item_rows .= emailTableRow(
+            htmlspecialchars($item['food_name']) . ' x' . $item['qty'],
+            '&#8369;' . number_format($item['subtotal'], 2)
+        );
+    }
+    $item_rows .= emailTableRow('<strong>Total</strong>', '<strong>&#8369;' . number_format($d['total_amount'], 2) . '</strong>');
+
+    $body = <<<HTML
+    <h2 style="color:#2ec1ac;margin:0 0 8px;">Your Food Order is Being Prepared!</h2>
+    <p style="margin:0 0 20px;color:#555;">
+      Hi <strong>{$d['user_name']}</strong>, we received your order and our staff is
+      preparing it now. It will be delivered to your room shortly.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eee;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+      {$item_rows}
+    </table>
+    <div style="background:#e8f8f5;border-left:4px solid #2ec1ac;padding:12px 16px;border-radius:4px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:#0f6e56;">
+        <strong>Room:</strong> {$d['room_no']}<br>
+        <strong>Payment:</strong> This will be added to your checkout bill.
+      </p>
+    </div>
+    <p style="margin:0;font-size:13px;color:#999;">Enjoy your meal!</p>
+    HTML;
+
+    return sendHotelEmail($d['email'], 'Food Order Confirmed - ' . $d['room_no'], $body);
 }

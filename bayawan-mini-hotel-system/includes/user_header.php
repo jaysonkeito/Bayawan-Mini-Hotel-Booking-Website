@@ -29,18 +29,24 @@ require_once __DIR__ . '/csrf.php';
                 </li>
                 <?php if (isset($_SESSION['login']) && $_SESSION['login'] == true): ?>
                     <li class="nav-item">
+                        <a class="nav-link" href="user_food_menu.php">
+                            <i class="bi bi-cup-hot me-1"></i>Food Menu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_my_orders.php">My Orders</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="user_cart.php" class="nav-link position-relative" title="My Cart">
-                        <i class="bi bi-cart3 fs-5"></i>
-                        <?php
-                            $cart_badge_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-                        ?>
-                        <span id="cart-badge"
-                                class="position-absolute top-0 start-100 translate-middle
-                                    badge rounded-pill bg-danger"
-                                style="font-size:10px;
-                                    display:<?php echo $cart_badge_count > 0 ? 'inline-flex' : 'none' ?>;">
-                            <?php echo $cart_badge_count ?>
-                        </span>
+                            <i class="bi bi-cart3 fs-5"></i>
+                            <?php
+                                $cart_badge_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+                            ?>
+                            <span id="cart-badge"
+                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  style="font-size:10px; display:<?php echo $cart_badge_count > 0 ? 'inline-flex' : 'none' ?>;">
+                                <?php echo $cart_badge_count ?>
+                            </span>
                         </a>
                     </li>
                 <?php endif; ?>

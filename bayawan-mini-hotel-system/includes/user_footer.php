@@ -1,5 +1,4 @@
-<?php // bayawan-mini-hotel-system/includes/user_footer.php ?>
-
+<!-- bayawan-mini-hotel-system/includes/user_footer.php -->
 <div class="container-fluid bg-white mt-5">
   <div class="row">
     <div class="col-lg-4 p-4">
@@ -13,9 +12,6 @@
       <a href="user_facilities.php" class="d-inline-block mb-2 text-dark text-decoration-none">Facilities</a> <br>
       <a href="user_contact.php" class="d-inline-block mb-2 text-dark text-decoration-none">Contact us</a> <br>
       <a href="user_about.php" class="d-inline-block mb-2 text-dark text-decoration-none">About</a>
-
-      <a href="user_terms.php" class="d-inline-block mb-2 text-dark text-decoration-none">Terms & Conditions</a> <br>
-      <a href="user_privacy.php" class="d-inline-block mb-2 text-dark text-decoration-none">Privacy Policy</a>
     </div>
     <div class="col-lg-4 p-4">
       <h5 class="mb-3">Follow us</h5>
@@ -40,6 +36,18 @@
 
 <h6 class="text-center bg-dark text-white p-3 m-0">Designed and Developed by Jayson P. Francisco</h6>
 
+<!-- ── Login-nudge toast (shown when guest clicks Book Now while logged out) ── -->
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:9999">
+  <div id="bmh-login-toast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Please log in first to book a room.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
 <!-- Bootstrap JS (once, at the bottom) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" 
@@ -56,7 +64,6 @@
   function alert(type, msg, position='body') {
       let bs_class = (type == 'success') ? 'alert-success' : 'alert-danger';
       
-      // Remove any existing alert first
       let existing = document.querySelector('.custom-alert');
       if(existing) existing.remove();
 
@@ -75,11 +82,8 @@
           document.getElementById(position).appendChild(element);
       }
 
-      // Auto dismiss after 3 seconds
       setTimeout(() => {
-          if(element && element.parentNode){
-              element.remove();
-          }
+          if(element && element.parentNode) element.remove();
       }, 3000);
   }
 
@@ -116,11 +120,11 @@
       .then(r => r.text())
       .then(resp => {
         const t = resp.trim();
-        if(t == 'inv_email')      alert('error',   "Invalid Email!");
-        else if(t == 'not_verified') alert('error', "Email is not verified! Please contact Admin.");
-        else if(t == 'inactive')     alert('error', "Account Suspended! Please contact Admin.");
-        else if(t == 'mail_failed')  alert('error', "Cannot send email. Server Down!");
-        else if(t == 'upd_failed')   alert('error', "Account recovery failed. Server Down!");
+        if(t == 'inv_email')         alert('error',   "Invalid Email!");
+        else if(t == 'not_verified') alert('error',   "Email is not verified! Please contact Admin.");
+        else if(t == 'inactive')     alert('error',   "Account Suspended! Please contact Admin.");
+        else if(t == 'mail_failed')  alert('error',   "Cannot send email. Server Down!");
+        else if(t == 'upd_failed')   alert('error',   "Account recovery failed. Server Down!");
         else {
           alert('success', "Reset link sent to email!");
           forgot_form.reset();
@@ -130,19 +134,34 @@
     });
   }
 
-  // ─── Check Login To Book ───
+  // ─────────────────────────────────────────────────────────────────
+  //  checkLoginToBook
+  //  FIX: When not logged in, open the Login Modal directly instead
+  //       of showing a plain alert(). The pending room_id is saved in
+  //       sessionStorage so user_login_register.js can redirect there
+  //       after a successful login.
+  // ─────────────────────────────────────────────────────────────────
   function checkLoginToBook(status, room_id) {
-    if(status) window.location.href = 'user_confirm_booking.php?id=' + room_id;
-    else alert('error', 'Please login to book room!');
+    if (status) {
+      window.location.href = 'user_confirm_booking.php?id=' + room_id;
+    } else {
+      // Remember where to redirect after login
+      sessionStorage.setItem('redirectAfterLogin', 'user_confirm_booking.php?id=' + room_id);
+
+      // Show a friendly toast at top of page
+      const toastEl = document.getElementById('bmh-login-toast');
+      if (toastEl) {
+        toastEl.querySelector('.toast-body').textContent =
+          'Please log in first to book a room.';
+        new bootstrap.Toast(toastEl, { delay: 3500 }).show();
+      }
+
+      // Open the Login Modal
+      new bootstrap.Modal(document.getElementById('loginModal')).show();
+    }
   }
 
-  // Auto-dismiss PHP-rendered static alerts (e.g. contact form success)
-  document.querySelectorAll('.custom-alert').forEach(el => {
-      setTimeout(() => { if (el && el.parentNode) el.remove(); }, 3000);
-  });
-
   setActive();
-
 </script>
 
 <!-- Session Timeout -->
@@ -154,7 +173,5 @@
     logoutUrl:  'user_logout.php',
     checkEvery: 60,
   });
-
-  
 </script>
 <?php endif; ?>

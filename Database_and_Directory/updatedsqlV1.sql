@@ -328,6 +328,106 @@ CREATE TABLE `rate_limit` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =============================================
+-- 1. food_menu
+--    Admin manages this (CRUD in admin panel)
+-- =============================================
+DROP TABLE IF EXISTS `food_menu`;
+CREATE TABLE  `food_menu` (
+  `id`          INT(11)       NOT NULL AUTO_INCREMENT,
+  `name`        VARCHAR(150)  NOT NULL,
+  `description` VARCHAR(300)  NOT NULL DEFAULT '',
+  `price`       DECIMAL(10,2) NOT NULL,
+  `category`    VARCHAR(80)   NOT NULL DEFAULT 'Others',
+  `image`       VARCHAR(150)  NOT NULL DEFAULT 'default_food.jpg',
+  `is_available` TINYINT(1)  NOT NULL DEFAULT 1  COMMENT '1=available, 0=hidden from menu',
+  `removed`     TINYINT(1)   NOT NULL DEFAULT 0  COMMENT 'soft delete',
+  `created_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =============================================
+-- 2. food_inventory
+--    One row per food_menu item
+-- =============================================
+DROP TABLE IF EXISTS `food_inventory`;
+CREATE TABLE  `food_inventory` (
+  `id`                 INT(11)  NOT NULL AUTO_INCREMENT,
+  `food_id`            INT(11)  NOT NULL,
+  `stock_qty`          INT(11)  NOT NULL DEFAULT 0,
+  `low_stock_threshold` INT(11) NOT NULL DEFAULT 5  COMMENT 'Alert fires when stock_qty <= this',
+  `updated_at`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_food_id` (`food_id`),
+  KEY `fk_inventory_food` (`food_id`),
+  CONSTRAINT `fk_inventory_food` FOREIGN KEY (`food_id`) REFERENCES `food_menu` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =============================================
+-- 3. food_orders
+--    One order per guest "session" (per booking)
+--    status: pending | preparing | delivered | paid | cancelled
+-- =============================================
+DROP TABLE IF EXISTS `food_orders`;
+CREATE TABLE `food_orders` (
+  `id`            INT(11)       NOT NULL AUTO_INCREMENT,
+  `booking_id`    INT(11)       NOT NULL,
+  `user_id`       INT(11)       NOT NULL,
+  `room_no`       VARCHAR(50)   NOT NULL DEFAULT '',
+  `total_amount`  DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `status`        VARCHAR(30)   NOT NULL DEFAULT 'pending' COMMENT 'pending|preparing|delivered|paid|cancelled',
+  `payment_method` VARCHAR(30)  DEFAULT NULL COMMENT 'cash|gcash|null',
+  `notes`         VARCHAR(300)  DEFAULT NULL,
+  `ordered_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_foodorder_booking` (`booking_id`),
+  KEY `fk_foodorder_user`    (`user_id`),
+  CONSTRAINT `fk_foodorder_booking` FOREIGN KEY (`booking_id`) REFERENCES `booking_order` (`booking_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_foodorder_user`    FOREIGN KEY (`user_id`)    REFERENCES `user_cred`     (`id`)         ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =============================================
+-- 4. food_order_items
+--    Line items per food_order
+-- =============================================
+DROP TABLE IF EXISTS `food_order_items`;
+CREATE TABLE  `food_order_items` (
+  `id`         INT(11)       NOT NULL AUTO_INCREMENT,
+  `order_id`   INT(11)       NOT NULL,
+  `food_id`    INT(11)       NOT NULL,
+  `food_name`  VARCHAR(150)  NOT NULL COMMENT 'snapshot at order time',
+  `unit_price` DECIMAL(10,2) NOT NULL COMMENT 'snapshot at order time',
+  `qty`        INT(11)       NOT NULL DEFAULT 1,
+  `subtotal`   DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_foi_order` (`order_id`),
+  KEY `fk_foi_food`  (`food_id`),
+  CONSTRAINT `fk_foi_order` FOREIGN KEY (`order_id`) REFERENCES `food_orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_foi_food`  FOREIGN KEY (`food_id`)  REFERENCES `food_menu`   (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =============================================
+-- Sample food menu + inventory rows (optional)
+-- Remove if you want a clean start
+-- =============================================
+INSERT INTO `food_menu` (`name`, `description`, `price`, `category`) VALUES
+('Tapsilog',  'Beef tapa, sinangag, itlog', 120.00, 'Filipino Meals'),
+('Bangsilog', 'Bangus, sinangag, itlog',    110.00, 'Filipino Meals'),
+('Hotsilog',  'Hotdog, sinangag, itlog',     90.00, 'Filipino Meals'),
+('Lugaw',     'Plain rice porridge',          60.00, 'Snacks'),
+('Instant Coffee', 'Hot 3-in-1 coffee',       30.00, 'Beverages'),
+('Bottled Water',  '500ml mineral water',     25.00, 'Beverages'),
+('Iced Tea',       '350ml in bottle',         35.00, 'Beverages');
+
+-- Matching inventory rows (stock = 50, low threshold = 5)
+INSERT INTO `food_inventory` (`food_id`, `stock_qty`, `low_stock_threshold`)
+SELECT `id`, 50, 5 FROM `food_menu`;
+
+-- =============================================
 -- Finalize
 -- =============================================
 COMMIT;
