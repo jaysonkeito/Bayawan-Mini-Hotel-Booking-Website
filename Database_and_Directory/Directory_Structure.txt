@@ -24,13 +24,24 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │   │   ├── admin_users.php
 │   │   ├── admin_settings.php
 │   │   ├── admin_generate_pdf.php
+│   │   ├── admin_room_status.php           ← EXISTING (now linked in sidebar)
+│   │   ├── admin_checkout_clearance.php    ← EXISTING (now linked in sidebar)
+│   │   ├── admin_food_menu.php             ← EXISTING (now linked in sidebar)
+│   │   ├── admin_food_orders.php           ← EXISTING (now linked in sidebar)
+│   │   ├── admin_inventory.php             ← EXISTING (now linked in sidebar)
+│   │   ├── admin_2fa_setup.php
 │   │   └── admin_logout.php
 │   │   │
 │   │   ├── ajax/
 │   │   │   ├── admin_booking_records.php
+│   │   │   ├── admin_calendar.php
 │   │   │   ├── admin_carousel_crud.php
+│   │   │   ├── admin_checkout_clearance.php
 │   │   │   ├── admin_dashboard.php
 │   │   │   ├── admin_features_facilities.php
+│   │   │   ├── admin_food_menu.php         ← NEW (was missing, now created)
+│   │   │   ├── admin_food_orders.php
+│   │   │   ├── admin_inventory.php         ← NEW (was missing, now created)
 │   │   │   ├── admin_new_bookings.php
 │   │   │   ├── admin_refund_bookings.php
 │   │   │   ├── admin_reports.php
@@ -46,27 +57,28 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │   │   │   ├── mpdf/               (mPDF library)
 │   │   │   ├── admin_configuration.php
 │   │   │   ├── admin_essentials.php
-│   │   │   ├── admin_header.php
+│   │   │   ├── admin_header.php    ← UPDATED (Food Service submenu + Room Status + Checkout Clearance added to sidebar)
 │   │   │   ├── admin_links.php
 │   │   │   └── admin_scripts.php
 │   │   │
 │   │   └── scripts/
-│   │       ├── admin_booking_records.php
-│   │       ├── admin_carousel.php
-│   │       ├── admin_dashboard.php
-│   │       ├── admin_features_facilities.php
-│   │       ├── admin_new_bookings.php
-│   │       ├── admin_refund_bookings.php
-│   │       ├── admin_reports.php
-│   │       ├── admin_rooms.php
-│   │       ├── admin_settings.php
-│   │       ├── admin_timeout.php
-│   │       └── admin_users.php
+│   │       ├── admin_booking_records.js
+│   │       ├── admin_carousel.js
+│   │       ├── admin_dashboard.js
+│   │       ├── admin_features_facilities.js
+│   │       ├── admin_new_bookings.js
+│   │       ├── admin_refund_bookings.js
+│   │       ├── admin_reports.js
+│   │       ├── admin_rooms.js
+│   │       ├── admin_settings.js
+│   │       ├── admin_users.js
+│   │       └── session_timeout.js
 │   │
 │   ├── ajax/
 │   │   ├── user_cancel_booking.php
 │   │   ├── user_cart.php
 │   │   ├── user_confirm_booking.php
+│   │   ├── user_food_order.php             ← NEW (was missing, now created)
 │   │   ├── user_get_booked_dates.php
 │   │   ├── user_google_auth.php
 │   │   ├── user_google_callback.php
@@ -75,8 +87,8 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │   │   ├── user_review_room.php
 │   │   ├── user_room_details.php
 │   │   ├── user_rooms.php
-│   │   ├── user_set_lang.php           ← NEW: saves EN/FIL language choice to session
-│   │   └── user_user_session_check.php
+│   │   ├── user_session_check.php
+│   │   └── user_set_lang.php
 │   │
 │   ├── css/
 │   │   └── user_common.css
@@ -85,6 +97,8 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │   │   ├── about/
 │   │   ├── carousel/
 │   │   ├── facilities/
+│   │   ├── food/                           ← NEW folder (food item images go here)
+│   │   │   └── default_food.jpg            ← NEW placeholder image required
 │   │   ├── rooms/
 │   │   └── users/
 │   │
@@ -95,36 +109,40 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │   │   ├── vendor/         (Composer autoload — PHPMailer, OAuth2-Google, mPDF)
 │   │   ├── composer.json
 │   │   ├── composer.lock
-│   │   ├── lang.php                    ← NEW: EN/FIL translation table + t() helper
+│   │   ├── csrf.php
+│   │   ├── lang.php
 │   │   ├── rate_limiter.php
 │   │   ├── user_complete_profile_modal.php
 │   │   ├── user_config_google.php
 │   │   ├── user_email_helper.php
 │   │   ├── user_footer.php
-│   │   ├── user_header.php             (updated: EN/FIL toggle in navbar)
+│   │   ├── user_header.php    ← UPDATED (Food Menu + My Orders added to user dropdown)
 │   │   └── user_links.php
 │   │
 │   ├── scripts/
 │   │   ├── user_login_register.json
 │   │   └── user_main.js
 │   │
-│   ├── user_index.php                  (updated: EN/FIL translations applied)
+│   ├── user_index.php
 │   ├── user_home.php
-│   ├── user_about.php                  (updated: EN/FIL translations applied)
-│   ├── user_rooms.php                  (updated: EN/FIL translations applied)
-│   ├── user_room_details.php           (updated: EN/FIL translations applied)
-│   ├── user_facilities.php             (updated: EN/FIL translations applied)
-│   ├── user_confirm_booking.php        (updated: EN/FIL translations applied)
-│   ├── user_cart.php                   (updated: EN/FIL translations applied)
+│   ├── user_about.php
+│   ├── user_rooms.php
+│   ├── user_room_details.php
+│   ├── user_facilities.php
+│   ├── user_confirm_booking.php
+│   ├── user_cart.php
 │   ├── user_pay_now.php
 │   ├── user_pay_response.php
 │   ├── user_pay_status.php
-│   ├── user_bookings.php               (updated: EN/FIL translations applied)
+│   ├── user_bookings.php
+│   ├── user_food_menu.php     ← UPDATED (removed duplicate require, fixed head structure)
+│   ├── user_my_orders.php     ← UPDATED (added missing user_links.php in head)
 │   ├── user_generate_pdf.php
-│   ├── user_profile.php                (updated: EN/FIL translations applied)
-│   ├── user_contact.php                (updated: EN/FIL translations applied)
+│   ├── user_profile.php
+│   ├── user_contact.php
 │   └── user_logout.php
 │
 └── Database_and_Directory/
-    ├── Directory_Structure.txt
+    ├── Directory_Structure.txt                 ← THIS FILE
+    ├── migration_food_service_tables.sql       ← NEW (run after updatedsqlV1.sql)
     └── updatedsqlV1.sql
