@@ -1,8 +1,4 @@
-<?php
-// bayawan-mini-hotel-system/admin/includes/admin_header.php
-require_once __DIR__ . '/../../includes/csrf.php';
-?>
-<meta name="csrf-token" content="<?= csrf_token() ?>">
+<?php // bayawan-mini-hotel-system/admin/includes/admin_header.php ?>
 
 <style>
   #dashboard-menu {
@@ -240,11 +236,46 @@ require_once __DIR__ . '/../../includes/csrf.php';
             <i class="bi bi-journal-text"></i>
             <span class="menu-text">Booking Records</span>
           </a>
-          <a class="nav-link" href="admin_calendar.php">
-            <i class="bi bi-calendar3"></i>
-            <span class="menu-text">Booking Calendar</span>
-          </a>
           <?php } ?>
+        </div>
+      </li>
+
+      <!-- Room Status — both roles -->
+      <li class="nav-item">
+        <a class="nav-link" href="admin_room_status.php">
+          <i class="bi bi-door-open-fill"></i>
+          <span class="menu-text">Room Status</span>
+        </a>
+      </li>
+
+      <!-- Checkout Clearance — both roles -->
+      <li class="nav-item">
+        <a class="nav-link" href="admin_checkout_clearance.php">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="menu-text">Checkout Clearance</span>
+        </a>
+      </li>
+
+      <!-- Food Service — both roles -->
+      <li class="nav-item">
+        <button class="menu-btn" onclick="toggleSubMenu(this)">
+          <i class="bi bi-egg-fried"></i>
+          <span class="menu-text">Food Service</span>
+          <i class="bi bi-caret-down-fill ms-auto menu-text" style="font-size:0.7rem;"></i>
+        </button>
+        <div class="sub-menu" id="foodSubMenu">
+          <a class="nav-link" href="admin_food_menu.php">
+            <i class="bi bi-menu-button-wide"></i>
+            <span class="menu-text">Food Menu</span>
+          </a>
+          <a class="nav-link" href="admin_food_orders.php">
+            <i class="bi bi-bag-check"></i>
+            <span class="menu-text">Food Orders</span>
+          </a>
+          <a class="nav-link" href="admin_inventory.php">
+            <i class="bi bi-boxes"></i>
+            <span class="menu-text">Inventory</span>
+          </a>
         </div>
       </li>
 
@@ -299,71 +330,6 @@ require_once __DIR__ . '/../../includes/csrf.php';
         </a>
       </li>
       <?php } ?>
-
-      <!-- 2FA Settings — both roles -->
-      <li class="nav-item">
-        <a class="nav-link" href="admin_2fa_setup.php">
-          <i class="bi bi-shield-lock"></i>
-          <span class="menu-text">2FA Setup</span>
-        </a>
-      </li>
-
-      <!-- Room Status — both roles -->
-      <li class="nav-item">
-        <a class="nav-link" href="admin_room_status.php">
-          <i class="bi bi-grid-3x3-gap"></i>
-          <span class="menu-text">Room Status</span>
-        </a>
-      </li>
- 
-      <!-- Food Service — both roles, admin sees full submenu -->
-      <li class="nav-item">
-        <button class="menu-btn" onclick="toggleSubMenu(this)">
-          <i class="bi bi-cup-hot"></i>
-          <span class="menu-text">Food Service</span>
-          <i class="bi bi-caret-down-fill ms-auto menu-text" style="font-size:0.7rem;"></i>
-        </button>
-        <div class="sub-menu" id="foodSubMenu">
-          <a class="nav-link" href="admin_food_orders.php">
-            <i class="bi bi-bag-check"></i>
-            <span class="menu-text">
-              Food Orders
-              <?php
-                $fo_badge_q = "SELECT COUNT(*) AS cnt FROM food_orders WHERE status IN ('pending','preparing')";
-                $fo_badge   = (int) mysqli_fetch_assoc(mysqli_query($conn, $fo_badge_q))['cnt'];
-                if ($fo_badge > 0) {
-                    echo "<span class='badge bg-warning text-dark ms-1'>{$fo_badge}</span>";
-                }
-              ?>
-            </span>
-          </a>
-          <a class="nav-link" href="admin_checkout_clearance.php">
-            <i class="bi bi-door-closed"></i>
-            <span class="menu-text">Checkout Clearance</span>
-          </a>
-          <?php if (isAdmin()) { ?>
-          <a class="nav-link" href="admin_food_menu.php">
-            <i class="bi bi-menu-button-wide"></i>
-            <span class="menu-text">Food Menu</span>
-          </a>
-          <a class="nav-link" href="admin_inventory.php">
-            <i class="bi bi-boxes"></i>
-            <span class="menu-text">
-              Inventory
-              <?php
-                $inv_badge_q = "SELECT COUNT(*) AS cnt FROM food_menu fm
-                                LEFT JOIN food_inventory fi ON fm.id = fi.food_id
-                                WHERE fm.removed = 0 AND fi.stock_qty <= fi.low_stock_threshold";
-                $inv_badge   = (int) mysqli_fetch_assoc(mysqli_query($conn, $inv_badge_q))['cnt'];
-                if ($inv_badge > 0) {
-                    echo "<span class='badge bg-danger ms-1'>{$inv_badge}</span>";
-                }
-              ?>
-            </span>
-          </a>
-          <?php } ?>
-        </div>
-      </li>
 
       <!-- Logout — both roles -->
       <li class="nav-item mt-3 border-top border-secondary pt-3">
@@ -440,20 +406,22 @@ require_once __DIR__ . '/../../includes/csrf.php';
     }
   }
 
-  // Auto-open Bookings submenu
-  const bookingPages = ['new_bookings', 'refund_bookings', 'booking_records', 'calendar'];
-  const bookingSub   = document.getElementById('bookingSubMenu');
-  if (bookingPages.some(p => currentPage.includes(p))) {
+  // ─── Auto open submenus based on current page ───
+  const bookingPages = ['new_bookings', 'refund_bookings', 'booking_records'];
+  const foodPages    = ['food_menu', 'food_orders', 'inventory'];
+  const currentPage  = window.location.pathname;
+
+  const bookingSub = document.getElementById('bookingSubMenu');
+  if(bookingPages.some(p => currentPage.includes(p))){
     bookingSub.style.maxHeight = bookingSub.scrollHeight + 'px';
   }
- 
-  // Auto-open Food Service submenu
-  const foodPages = ['food_orders', 'food_menu', 'inventory', 'checkout_clearance'];
-  const foodSub   = document.getElementById('foodSubMenu');
-  if (foodSub && foodPages.some(p => currentPage.includes(p))) {
+
+  const foodSub = document.getElementById('foodSubMenu');
+  if(foodPages.some(p => currentPage.includes(p))){
     foodSub.style.maxHeight = foodSub.scrollHeight + 'px';
   }
 
+  // ─── Set active link ───
   function setActive() {
     let a_tags = document.getElementById('dashboard-menu').getElementsByTagName('a');
     for(let i = 0; i < a_tags.length; i++){
@@ -464,70 +432,4 @@ require_once __DIR__ . '/../../includes/csrf.php';
     }
   }
   setActive();
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CSRF XHR Interceptor
-     Automatically attaches the CSRF token to every XMLHttpRequest
-     sent from any admin page that includes this header.
-     No changes needed in any individual admin JS file.
-     ═══════════════════════════════════════════════════════════════ -->
-<script>
-(function () {
-    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-    if (!csrfToken) return;
-
-    // ── XHR interceptor ──────────────────────────────────────
-    var _send = XMLHttpRequest.prototype.send;
-    var _open = XMLHttpRequest.prototype.open;
-    var _currentMethod = 'GET';
-    var _currentUrl = '';
-
-    XMLHttpRequest.prototype.open = function(method, url) {
-        _currentMethod = method.toUpperCase();
-        _currentUrl = url;
-        _open.apply(this, arguments);
-    };
-
-    XMLHttpRequest.prototype.send = function (body) {
-        if (_currentMethod === 'POST') {
-            if (body instanceof FormData) {
-                body.append('csrf_token', csrfToken);
-            } else if (typeof body === 'string' && body.length > 0) {
-                body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
-            }
-        } else if (_currentMethod === 'GET') {
-            var sep = _currentUrl.indexOf('?') === -1 ? '?' : '&';
-            _currentUrl = _currentUrl + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
-            _open.call(this, 'GET', _currentUrl, true);
-        }
-        _send.call(this, body);
-    };
-
-    // ── fetch() interceptor ───────────────────────────────────
-    var _fetch = window.fetch;
-    window.fetch = function(input, init) {
-        init = init || {};
-        var method = (init.method || 'GET').toUpperCase();
-
-        if (method === 'POST') {
-            if (init.body instanceof FormData) {
-                init.body.append('csrf_token', csrfToken);
-            } else if (typeof init.body === 'string') {
-                init.body = init.body + '&csrf_token=' + encodeURIComponent(csrfToken);
-            } else {
-                // No body — create one with just the token
-                var fd = new FormData();
-                fd.append('csrf_token', csrfToken);
-                init.body = fd;
-            }
-        } else if (method === 'GET') {
-            var url = (typeof input === 'string') ? input : input.url;
-            var sep = url.indexOf('?') === -1 ? '?' : '&';
-            input = url + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
-        }
-
-        return _fetch.call(this, input, init);
-    };
-})();
 </script>

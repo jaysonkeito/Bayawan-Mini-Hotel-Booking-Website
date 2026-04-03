@@ -34,6 +34,7 @@ $status_badge = [
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title><?= htmlspecialchars($settings_r['site_title']) ?> - My Food Orders</title>
+  <?php require 'includes/user_links.php'; ?>
 </head>
 <body class="bg-light">
 <?php require 'includes/user_header.php'; ?>

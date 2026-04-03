@@ -1,7 +1,6 @@
 <?php
 // bayawan-mini-hotel-system/user_food_menu.php
-// Only accessible to logged-in guests who have an ACTIVE (checked-in) booking.
-require 'includes/user_links.php';
+require 'includes/user_links.php';   // ← loads session, DB, select(), $conn, $settings_r
 require_once 'includes/csrf.php';
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
@@ -32,7 +31,6 @@ $is_checked_in = (bool) $active_r;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($settings_r['site_title']) ?> - Food Menu</title>
-  <?php require 'includes/user_links.php'; ?>
 </head>
 <body class="bg-light">
 <?php require 'includes/user_header.php'; ?>
@@ -207,7 +205,6 @@ function changeQty(id, delta) {
 
 function renderSummary() {
     const summary = document.getElementById('order-summary');
-    const emptyMsg = document.getElementById('empty-msg');
     const totalEl  = document.getElementById('order-total');
     const placeBtn = document.getElementById('place-order-btn');
 

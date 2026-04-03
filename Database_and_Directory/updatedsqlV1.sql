@@ -333,16 +333,19 @@ CREATE TABLE `rate_limit` (
 -- =============================================
 DROP TABLE IF EXISTS `food_menu`;
 CREATE TABLE  `food_menu` (
-  `id`          INT(11)       NOT NULL AUTO_INCREMENT,
-  `name`        VARCHAR(150)  NOT NULL,
-  `description` VARCHAR(300)  NOT NULL DEFAULT '',
-  `price`       DECIMAL(10,2) NOT NULL,
-  `category`    VARCHAR(80)   NOT NULL DEFAULT 'Others',
-  `image`       VARCHAR(150)  NOT NULL DEFAULT 'default_food.jpg',
-  `is_available` TINYINT(1)  NOT NULL DEFAULT 1  COMMENT '1=available, 0=hidden from menu',
-  `removed`     TINYINT(1)   NOT NULL DEFAULT 0  COMMENT 'soft delete',
-  `created_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  `id`           INT(11)        NOT NULL AUTO_INCREMENT,
+  `name`         VARCHAR(150)   NOT NULL,
+  `category`     VARCHAR(100)   NOT NULL DEFAULT 'General',
+  `price`        DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
+  `description`  VARCHAR(300)   NOT NULL DEFAULT '',
+  `image`        VARCHAR(150)   NOT NULL DEFAULT 'default_food.jpg', COMMENT '1 = visible on menu, 0 = hidden',
+  `removed`      TINYINT(1)     NOT NULL DEFAULT 0 COMMENT 'soft delete flag',
+  `created_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_category`    (`category`),
+  INDEX `idx_available`   (`is_available`),
+  INDEX `idx_removed`     (`removed`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -352,15 +355,14 @@ CREATE TABLE  `food_menu` (
 -- =============================================
 DROP TABLE IF EXISTS `food_inventory`;
 CREATE TABLE  `food_inventory` (
-  `id`                 INT(11)  NOT NULL AUTO_INCREMENT,
-  `food_id`            INT(11)  NOT NULL,
-  `stock_qty`          INT(11)  NOT NULL DEFAULT 0,
-  `low_stock_threshold` INT(11) NOT NULL DEFAULT 5  COMMENT 'Alert fires when stock_qty <= this',
-  `updated_at`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_food_id` (`food_id`),
-  KEY `fk_inventory_food` (`food_id`),
-  CONSTRAINT `fk_inventory_food` FOREIGN KEY (`food_id`) REFERENCES `food_menu` (`id`) ON DELETE CASCADE
+  `food_id`             INT(11) NOT NULL,
+  `stock_qty`           INT(11) NOT NULL DEFAULT 0,
+  `low_stock_threshold` INT(11) NOT NULL DEFAULT 5 COMMENT 'Alert shown in admin when stock_qty <= this value',
+  `updated_at`          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`food_id`),
+  CONSTRAINT `fk_inventory_food`
+    FOREIGN KEY (`food_id`) REFERENCES `food_menu` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -371,21 +373,24 @@ CREATE TABLE  `food_inventory` (
 -- =============================================
 DROP TABLE IF EXISTS `food_orders`;
 CREATE TABLE `food_orders` (
-  `id`            INT(11)       NOT NULL AUTO_INCREMENT,
-  `booking_id`    INT(11)       NOT NULL,
-  `user_id`       INT(11)       NOT NULL,
-  `room_no`       VARCHAR(50)   NOT NULL DEFAULT '',
-  `total_amount`  DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-  `status`        VARCHAR(30)   NOT NULL DEFAULT 'pending' COMMENT 'pending|preparing|delivered|paid|cancelled',
-  `payment_method` VARCHAR(30)  DEFAULT NULL COMMENT 'cash|gcash|null',
-  `notes`         VARCHAR(300)  DEFAULT NULL,
-  `ordered_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id`           INT(11)        NOT NULL AUTO_INCREMENT,
+  `booking_id`   INT(11)        NOT NULL,
+  `user_id`      INT(11)        NOT NULL,
+  `room_no`      VARCHAR(50)    NOT NULL,
+  `total_amount` DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
+  `status`       ENUM('pending','preparing','delivered','paid','cancelled') NOT NULL DEFAULT 'pending',
+  `notes`        TEXT           DEFAULT NULL,
+  `ordered_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `fk_foodorder_booking` (`booking_id`),
-  KEY `fk_foodorder_user`    (`user_id`),
-  CONSTRAINT `fk_foodorder_booking` FOREIGN KEY (`booking_id`) REFERENCES `booking_order` (`booking_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_foodorder_user`    FOREIGN KEY (`user_id`)    REFERENCES `user_cred`     (`id`)         ON DELETE CASCADE
+  INDEX `idx_booking`   (`booking_id`),
+  INDEX `idx_user`      (`user_id`),
+  INDEX `idx_status`    (`status`),
+  CONSTRAINT `fk_forders_booking`
+    FOREIGN KEY (`booking_id`) REFERENCES `booking_order` (`booking_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_forders_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user_cred` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -397,16 +402,15 @@ DROP TABLE IF EXISTS `food_order_items`;
 CREATE TABLE  `food_order_items` (
   `id`         INT(11)       NOT NULL AUTO_INCREMENT,
   `order_id`   INT(11)       NOT NULL,
-  `food_id`    INT(11)       NOT NULL,
-  `food_name`  VARCHAR(150)  NOT NULL COMMENT 'snapshot at order time',
-  `unit_price` DECIMAL(10,2) NOT NULL COMMENT 'snapshot at order time',
+  `food_name`  VARCHAR(150)  NOT NULL COMMENT 'Snapshot of name at time of order',
+  `unit_price` DECIMAL(10,2) NOT NULL,
   `qty`        INT(11)       NOT NULL DEFAULT 1,
   `subtotal`   DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_foi_order` (`order_id`),
-  KEY `fk_foi_food`  (`food_id`),
-  CONSTRAINT `fk_foi_order` FOREIGN KEY (`order_id`) REFERENCES `food_orders` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_foi_food`  FOREIGN KEY (`food_id`)  REFERENCES `food_menu`   (`id`) ON DELETE RESTRICT
+  INDEX `idx_order` (`order_id`),
+  CONSTRAINT `fk_foitems_order`
+    FOREIGN KEY (`order_id`) REFERENCES `food_orders` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

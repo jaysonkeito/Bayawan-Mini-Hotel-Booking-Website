@@ -1,9 +1,4 @@
-<?php
-// bayawan-mini-hotel-system/includes/user_header.php
-require_once __DIR__ . '/csrf.php';
-?>
-<meta name="csrf-token" content="<?= csrf_token() ?>">
-
+<?php // bayawan-mini-hotel-system/includes/user_header.php ?>
 <nav id="nav-bar" class="navbar navbar-expand-lg navbar-light bg-white px-lg-3 py-lg-2 shadow-sm sticky-top">
     <div class="container-fluid">
         <a class="navbar-brand me-5 fw-bold fs-3 h-font" href="user_index.php">Bayawan Mini Hotel</a>
@@ -29,24 +24,18 @@ require_once __DIR__ . '/csrf.php';
                 </li>
                 <?php if (isset($_SESSION['login']) && $_SESSION['login'] == true): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="user_food_menu.php">
-                            <i class="bi bi-cup-hot me-1"></i>Food Menu
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="user_my_orders.php">My Orders</a>
-                    </li>
-                    <li class="nav-item">
                         <a href="user_cart.php" class="nav-link position-relative" title="My Cart">
-                            <i class="bi bi-cart3 fs-5"></i>
-                            <?php
-                                $cart_badge_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-                            ?>
-                            <span id="cart-badge"
-                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                  style="font-size:10px; display:<?php echo $cart_badge_count > 0 ? 'inline-flex' : 'none' ?>;">
-                                <?php echo $cart_badge_count ?>
-                            </span>
+                        <i class="bi bi-cart3 fs-5"></i>
+                        <?php
+                            $cart_badge_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+                        ?>
+                        <span id="cart-badge"
+                                class="position-absolute top-0 start-100 translate-middle
+                                    badge rounded-pill bg-danger"
+                                style="font-size:10px;
+                                    display:<?php echo $cart_badge_count > 0 ? 'inline-flex' : 'none' ?>;">
+                            <?php echo $cart_badge_count ?>
+                        </span>
                         </a>
                     </li>
                 <?php endif; ?>
@@ -82,7 +71,11 @@ require_once __DIR__ . '/csrf.php';
                         <ul class="dropdown-menu dropdown-menu-lg-end">
                             <li><a class="dropdown-item" href="user_profile.php">Profile</a></li>
                             <li><a class="dropdown-item" href="user_bookings.php">Bookings</a></li>
-                            <li><a class="dropdown-item" href="user_logout.php">Logout</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="user_food_menu.php"><i class="bi bi-egg-fried me-2"></i>Food Menu</a></li>
+                            <li><a class="dropdown-item" href="user_my_orders.php"><i class="bi bi-bag-check me-2"></i>My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="user_logout.php">Logout</a></li>
                         </ul>
                     </div>
                     data;
@@ -380,6 +373,7 @@ require_once __DIR__ . '/csrf.php';
                 <h6 class="mt-4">2. How We Use Your Information</h6>
                 <ul>
                     <li>To process and confirm your booking</li>
+                    <li>To communicate with you about your reservation</li>
                     <li>To improve our services and website</li>
                     <li>For security and fraud prevention</li>
                 </ul>
@@ -392,70 +386,3 @@ require_once __DIR__ . '/csrf.php';
         </div>
     </div>
 </div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CSRF XHR Interceptor
-     Automatically attaches the CSRF token to every XMLHttpRequest
-     sent from any page that includes this header. No changes needed
-     in any individual JS file — this covers all of them globally.
-     ═══════════════════════════════════════════════════════════════ -->
-
-<script>
-(function () {
-    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-    if (!csrfToken) return;
-
-    // ── XHR interceptor ──────────────────────────────────────
-    var _send = XMLHttpRequest.prototype.send;
-    var _open = XMLHttpRequest.prototype.open;
-    var _currentMethod = 'GET';
-    var _currentUrl = '';
-
-    XMLHttpRequest.prototype.open = function(method, url) {
-        _currentMethod = method.toUpperCase();
-        _currentUrl = url;
-        _open.apply(this, arguments);
-    };
-
-    XMLHttpRequest.prototype.send = function (body) {
-        if (_currentMethod === 'POST') {
-            if (body instanceof FormData) {
-                body.append('csrf_token', csrfToken);
-            } else if (typeof body === 'string' && body.length > 0) {
-                body = body + '&csrf_token=' + encodeURIComponent(csrfToken);
-            }
-        } else if (_currentMethod === 'GET') {
-            var sep = _currentUrl.indexOf('?') === -1 ? '?' : '&';
-            _currentUrl = _currentUrl + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
-            _open.call(this, 'GET', _currentUrl, true);
-        }
-        _send.call(this, body);
-    };
-
-    // ── fetch() interceptor ───────────────────────────────────
-    var _fetch = window.fetch;
-    window.fetch = function(input, init) {
-        init = init || {};
-        var method = (init.method || 'GET').toUpperCase();
-
-        if (method === 'POST') {
-            if (init.body instanceof FormData) {
-                init.body.append('csrf_token', csrfToken);
-            } else if (typeof init.body === 'string') {
-                init.body = init.body + '&csrf_token=' + encodeURIComponent(csrfToken);
-            } else {
-                // No body — create one with just the token
-                var fd = new FormData();
-                fd.append('csrf_token', csrfToken);
-                init.body = fd;
-            }
-        } else if (method === 'GET') {
-            var url = (typeof input === 'string') ? input : input.url;
-            var sep = url.indexOf('?') === -1 ? '?' : '&';
-            input = url + sep + 'csrf_token=' + encodeURIComponent(csrfToken);
-        }
-
-        return _fetch.call(this, input, init);
-    };
-})();
-</script>
