@@ -144,5 +144,4 @@ BAYAWAN-MINI-HOTEL-LARAVEL
 │
 └── Database_and_Directory/
     ├── Directory_Structure.txt                 ← THIS FILE
-    ├── migration_food_service_tables.sql       ← NEW (run after updatedsqlV1.sql)
     └── updatedsqlV1.sql
