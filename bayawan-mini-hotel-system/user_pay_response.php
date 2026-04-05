@@ -112,14 +112,15 @@ if ($is_cart) {
         }
     }
 
-    // Send confirmation email for each booking on success
+    // Send email for each booking — confirmation on success, failure notice on failure
+    $email_q = "SELECT bo.*, bd.*, uc.email, uc.name AS user_name
+                FROM `booking_order` bo
+                INNER JOIN `booking_details` bd ON bo.booking_id = bd.booking_id
+                INNER JOIN `user_cred` uc ON bo.user_id = uc.id
+                WHERE bo.booking_id = ?";
+
     if ($verified_status === 'success') {
         foreach ($booking_ids as $bid) {
-            $email_q = "SELECT bo.*, bd.*, uc.email, uc.name AS user_name
-                        FROM `booking_order` bo
-                        INNER JOIN `booking_details` bd ON bo.booking_id = bd.booking_id
-                        INNER JOIN `user_cred` uc ON bo.user_id = uc.id
-                        WHERE bo.booking_id = ?";
             $email_data = mysqli_fetch_assoc(select($email_q, [$bid], 'i'));
             if ($email_data) {
                 sendBookingConfirmationEmail($email_data);
@@ -128,6 +129,16 @@ if ($is_cart) {
 
         // Clear the cart on successful payment
         $_SESSION['cart'] = [];
+    } else {
+        // Send a payment failed email for each booking in the cart (send only once per guest)
+        $notified_users = [];
+        foreach ($booking_ids as $bid) {
+            $email_data = mysqli_fetch_assoc(select($email_q, [$bid], 'i'));
+            if ($email_data && !in_array($email_data['email'], $notified_users)) {
+                sendPaymentFailedEmail($email_data);
+                $notified_users[] = $email_data['email'];
+            }
+        }
     }
 
     // Clear cart session vars
@@ -226,6 +237,17 @@ if ($verified_status === 'success') {
          WHERE `booking_id` = ?",
         [$txn_id, $resp_msg, $slct_fetch['booking_id']], 'ssi'
     );
+
+    // Send payment failed notification email to the guest
+    $email_q    = "SELECT bo.*, bd.*, uc.email, uc.name AS user_name
+                   FROM `booking_order` bo
+                   INNER JOIN `booking_details` bd ON bo.booking_id = bd.booking_id
+                   INNER JOIN `user_cred` uc ON bo.user_id = uc.id
+                   WHERE bo.booking_id = ?";
+    $email_data = mysqli_fetch_assoc(select($email_q, [$slct_fetch['booking_id']], 'i'));
+    if ($email_data) {
+        sendPaymentFailedEmail($email_data);
+    }
 }
 
 unset($_SESSION['paymongo_session_id'], $_SESSION['current_order_id']);

@@ -296,3 +296,49 @@ function sendFoodOrderConfirmationEmail(array $d): bool {
 
     return sendHotelEmail($d['email'], 'Food Order Confirmed - ' . $d['room_no'], $body);
 }
+
+// ─────────────────────────────────────────────
+//  6. PAYMENT FAILED
+//     Sent to guest when payment is unsuccessful
+//     $d keys: email, user_name, order_id, room_name, check_in, check_out
+// ─────────────────────────────────────────────
+function sendPaymentFailedEmail(array $d): bool {
+    $checkin  = date('F j, Y', strtotime($d['check_in']));
+    $checkout = date('F j, Y', strtotime($d['check_out']));
+
+    $rows  = emailTableRow('Order ID',  htmlspecialchars($d['order_id']));
+    $rows .= emailTableRow('Room',      htmlspecialchars($d['room_name']));
+    $rows .= emailTableRow('Check-in',  $checkin);
+    $rows .= emailTableRow('Check-out', $checkout);
+
+    $body = <<<HTML
+    <h2 style="color:#e74c3c;margin:0 0 8px;">Payment Unsuccessful</h2>
+    <p style="margin:0 0 20px;color:#555;">
+      Hi <strong>{$d['user_name']}</strong>, unfortunately your payment could not be
+      processed and your booking was not confirmed.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eee;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+      {$rows}
+    </table>
+    <div style="background:#fef3f2;border-left:4px solid #e74c3c;padding:12px 16px;border-radius:4px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:#a93226;">
+        <strong>What happened?</strong><br>
+        Your payment was declined or cancelled. No charge was made to your account.
+        Please try booking again — if the issue persists, contact your payment provider.
+      </p>
+    </div>
+    <div style="background:#e8f8f5;border-left:4px solid #2ec1ac;padding:12px 16px;border-radius:4px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:#0f6e56;">
+        <strong>Want to try again?</strong> Visit our
+        <a href="user_rooms.php" style="color:#2ec1ac;">Rooms page</a>
+        to make a new booking.
+      </p>
+    </div>
+    <p style="margin:0;font-size:13px;color:#999;">
+      Need help? Email us at
+      <a href="mailto:bayawanminihotel@gmail.com" style="color:#2ec1ac;">bayawanminihotel@gmail.com</a>
+    </p>
+    HTML;
+
+    return sendHotelEmail($d['email'], 'Payment Failed - ' . $d['order_id'], $body);
+}

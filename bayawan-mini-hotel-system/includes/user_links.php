@@ -5,6 +5,7 @@ date_default_timezone_set("Asia/Manila");
 
 require('admin/includes/admin_configuration.php');
 require('admin/includes/admin_essentials.php');
+require_once __DIR__ . '/csrf.php';
 
 // ── Update last activity timestamp on every page load ─────────────────
 if (isset($_SESSION['login']) && $_SESSION['login'] == true) {
@@ -17,6 +18,8 @@ $values     = [1];
 $contact_r  = mysqli_fetch_assoc(select($contact_q, $values, 'i'));
 $settings_r = mysqli_fetch_assoc(select($settings_q, $values, 'i'));
 ?>
+
+<meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
 
 <!-- Bootstrap 5.0.2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"

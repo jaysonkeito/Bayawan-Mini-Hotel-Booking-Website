@@ -194,11 +194,14 @@ function export_report(report_type, format) {
     form.action = 'ajax/admin_reports.php';
     form.target = '_blank';
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
     const fields = {
         ['export_' + format]: '1',
         report_type:           report_type,
         date_from:             current_date_from,
         date_to:               current_date_to,
+        csrf_token:            csrfToken,
     };
 
     Object.entries(fields).forEach(([name, value]) => {
