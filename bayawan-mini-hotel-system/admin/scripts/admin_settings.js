@@ -1,4 +1,5 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_settings.js */
+// IMPROVEMENT: all alert() calls replaced with show_alert()
 
 let general_data, contacts_data;
 
@@ -52,15 +53,15 @@ function upd_general(site_title_val, site_about_val) {
   xhr.onload = function () {
     bootstrap.Modal.getInstance(document.getElementById('general-s'))?.hide();
     if (this.responseText == 1) {
-      alert('success', 'Changes saved!');
+      show_alert('success', 'Changes saved!');
       get_general();
     } else {
-      alert('error', 'No changes made!');
+      show_alert('error', 'No changes made!');
     }
   };
 
   xhr.send(
-    'site_title=' + encodeURIComponent(site_title_val) +
+    'site_title='  + encodeURIComponent(site_title_val) +
     '&site_about=' + encodeURIComponent(site_about_val) +
     '&upd_general=1'
   );
@@ -73,9 +74,9 @@ function upd_shutdown(val) {
 
   xhr.onload = function () {
     if (this.responseText == 1 && general_data.shutdown == 0) {
-      alert('success', 'Site has been shutdown!');
+      show_alert('success', 'Site has been shutdown!');
     } else {
-      alert('success', 'Shutdown mode off!');
+      show_alert('success', 'Shutdown mode off!');
     }
     get_general();
   };
@@ -99,7 +100,6 @@ function get_contacts() {
       return;
     }
 
-    // Display fields — accessed by key name, not index position
     document.getElementById('address').innerText = contacts_data.address ?? '';
     document.getElementById('gmap').innerText    = contacts_data.gmap    ?? '';
     document.getElementById('pn1').innerText     = contacts_data.pn1     ?? '';
@@ -108,11 +108,10 @@ function get_contacts() {
     document.getElementById('fb').innerText      = contacts_data.fb      ?? '';
     document.getElementById('insta').innerText   = contacts_data.insta   ?? '';
     document.getElementById('tw').innerText      = contacts_data.tw      ?? '';
-    const iframeHtml  = contacts_data.iframe ?? '';
-    const iframeSrc   = iframeHtml.match(/src="([^"]+)"/);
+    const iframeHtml = contacts_data.iframe ?? '';
+    const iframeSrc  = iframeHtml.match(/src="([^"]+)"/);
     document.getElementById('iframe').src = iframeSrc ? iframeSrc[1] : '';
 
-    // Populate edit modal inputs
     document.getElementById('address_inp').value = contacts_data.address ?? '';
     document.getElementById('gmap_inp').value    = contacts_data.gmap    ?? '';
     document.getElementById('pn1_inp').value     = contacts_data.pn1     ?? '';
@@ -152,10 +151,10 @@ function upd_contacts() {
   xhr.onload = function () {
     bootstrap.Modal.getInstance(document.getElementById('contacts-s'))?.hide();
     if (this.responseText == 1) {
-      alert('success', 'Changes saved!');
+      show_alert('success', 'Changes saved!');
       get_contacts();
     } else {
-      alert('error', 'No changes made!');
+      show_alert('error', 'No changes made!');
     }
   };
 
@@ -180,15 +179,11 @@ function add_member() {
 
   xhr.onload = function () {
     bootstrap.Modal.getInstance(document.getElementById('team-s'))?.hide();
-
-    if (this.responseText == 'inv_img') {
-      alert('error', 'Only JPG and PNG images are allowed!');
-    } else if (this.responseText == 'inv_size') {
-      alert('error', 'Image should be less than 2MB!');
-    } else if (this.responseText == 'upd_failed') {
-      alert('error', 'Image upload failed. Server Down!');
-    } else {
-      alert('success', 'New member added!');
+    if      (this.responseText === 'inv_img')    show_alert('error',   'Only JPG and PNG images are allowed!');
+    else if (this.responseText === 'inv_size')   show_alert('error',   'Image should be less than 2MB!');
+    else if (this.responseText === 'upd_failed') show_alert('error',   'Image upload failed. Server Down!');
+    else {
+      show_alert('success', 'New member added!');
       member_name_inp.value    = '';
       member_picture_inp.value = '';
       get_members();
@@ -202,11 +197,9 @@ function get_members() {
   let xhr = new XMLHttpRequest();
   xhr.open("POST", "ajax/admin_settings_crud.php", true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
   xhr.onload = function () {
     document.getElementById('team-data').innerHTML = this.responseText;
   };
-
   xhr.send('get_members=1');
 }
 
@@ -214,16 +207,14 @@ function rem_member(val) {
   let xhr = new XMLHttpRequest();
   xhr.open("POST", "ajax/admin_settings_crud.php", true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
   xhr.onload = function () {
     if (this.responseText == 1) {
-      alert('success', 'Member removed!');
+      show_alert('success', 'Member removed!');
       get_members();
     } else {
-      alert('error', 'Server down!');
+      show_alert('error', 'Server down!');
     }
   };
-
   xhr.send('rem_member=' + val);
 }
 

@@ -1,79 +1,67 @@
 /* bayawan-mini-hotel-system/admin/scripts/admin_carousel.js */
+// IMPROVEMENT: all alert() calls replaced with show_alert()
 
-let carousel_s_form = document.getElementById('carousel_s_form');
+let carousel_s_form      = document.getElementById('carousel_s_form');
 let carousel_picture_inp = document.getElementById('carousel_picture_inp');
 
-
-carousel_s_form.addEventListener('submit',function(e){
+carousel_s_form.addEventListener('submit', function(e) {
   e.preventDefault();
   add_image();
 });
 
-function add_image()
-{
+function add_image() {
   let data = new FormData();
-  data.append('picture',carousel_picture_inp.files[0]);
-  data.append('add_image','');
+  data.append('picture',   carousel_picture_inp.files[0]);
+  data.append('add_image', '');
 
   let xhr = new XMLHttpRequest();
-  xhr.open("POST","ajax/admin_carousel_crud.php",true);
+  xhr.open("POST", "ajax/admin_carousel_crud.php", true);
 
-  xhr.onload = function(){
-    var myModal = document.getElementById('carousel-s');
-    var modal = bootstrap.Modal.getInstance(myModal);
-    modal.hide();
+  xhr.onload = function() {
+    bootstrap.Modal.getInstance(document.getElementById('carousel-s'))?.hide();
 
-    if(this.responseText == 'inv_img'){
-      alert('error','Only JPG and PNG images are allowed!');
-    }
-    else if(this.responseText == 'inv_size'){
-      alert('error','Image should be less than 2MB!');
-    }
-    else if(this.responseText == 'upd_failed'){
-      alert('error','Image upload failed. Server Down!');
-    }
-    else{
-      alert('success','New image added!');
-      carousel_picture_inp.value='';
+    if      (this.responseText === 'inv_img')    show_alert('error',   'Only JPG and PNG images are allowed!');
+    else if (this.responseText === 'inv_size')   show_alert('error',   'Image should be less than 2MB!');
+    else if (this.responseText === 'upd_failed') show_alert('error',   'Image upload failed. Server Down!');
+    else {
+      show_alert('success', 'New image added!');
+      carousel_picture_inp.value = '';
       get_carousel();
     }
-  }
+  };
 
   xhr.send(data);
 }
 
-function get_carousel()
-{
+function get_carousel() {
   let xhr = new XMLHttpRequest();
-  xhr.open("POST","ajax/admin_carousel_crud.php",true);
+  xhr.open("POST", "ajax/admin_carousel_crud.php", true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-  xhr.onload = function(){
+  xhr.onload = function() {
     document.getElementById('carousel-data').innerHTML = this.responseText;
-  }
+  };
 
   xhr.send('get_carousel');
 }
 
-function rem_image(val)
-{
+function rem_image(val) {
   let xhr = new XMLHttpRequest();
-  xhr.open("POST","ajax/admin_carousel_crud.php",true);
+  xhr.open("POST", "ajax/admin_carousel_crud.php", true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-  xhr.onload = function(){
-    if(this.responseText==1){
-      alert('success','Image removed!');
+  xhr.onload = function() {
+    if (this.responseText == 1) {
+      show_alert('success', 'Image removed!');
       get_carousel();
+    } else {
+      show_alert('error', 'Server down!');
     }
-    else{
-      alert('error','Server down!');
-    }
-  }
+  };
 
-  xhr.send('rem_image='+val);
+  xhr.send('rem_image=' + val);
 }
 
-window.onload = function(){
+window.onload = function() {
   get_carousel();
-}
+};

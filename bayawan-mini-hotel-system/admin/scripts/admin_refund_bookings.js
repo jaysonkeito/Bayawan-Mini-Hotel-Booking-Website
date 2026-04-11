@@ -37,7 +37,7 @@ function refund_booking(id) {
         try {
             result = JSON.parse(this.responseText);
         } catch (e) {
-            alert('error', 'Unexpected server response. Please try again.');
+            show_alert('error', 'Unexpected server response. Please try again.');
             if (btn) {
                 btn.disabled  = false;
                 btn.innerHTML = '<i class="bi bi-cash-stack"></i> Refund via PayMongo';
@@ -51,12 +51,12 @@ function refund_booking(id) {
                 ? `\n\nPayMongo Refund ID: ${result.refund_id}\nStatus: ${result.refund_status}`
                 : '';
 
-            alert('success', `Refund submitted successfully!${extra ? ' Refund ID: ' + result.refund_id : ''}`);
+            show_alert('success', `Refund submitted successfully!${extra ? ' Refund ID: ' + result.refund_id : ''}`);
             get_bookings(); // refresh the table — row should disappear
 
         } else {
             // Show the PayMongo error detail to the admin
-            alert('error', result.message || 'Refund failed. Please try again or use the PayMongo dashboard.');
+            show_alert('error', result.message || 'Refund failed. Please try again or use the PayMongo dashboard.');
 
             // Re-enable the button so the admin can retry or investigate
             if (btn) {
@@ -67,7 +67,7 @@ function refund_booking(id) {
     };
 
     xhr.onerror = function () {
-        alert('error', 'Network error. Please check your connection and try again.');
+        show_alert('error', 'Network error. Please check your connection and try again.');
         if (btn) {
             btn.disabled  = false;
             btn.innerHTML = '<i class="bi bi-cash-stack"></i> Refund via PayMongo';

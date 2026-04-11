@@ -105,7 +105,7 @@ function do_assign_room() {
   const bookingId = document.getElementById('assign-booking-id').value;
 
   if (!roomNo) {
-    alert('error', 'Please select a room number first!');
+    show_alert('error', 'Please select a room number first!');
     return;
   }
 
@@ -125,14 +125,14 @@ function do_assign_room() {
       reset_assign_modal();
 
       if (res.trim() == '1') {
-        alert('success', `${roomNo} assigned! Booking finalized!`);
+        show_alert('success', `${roomNo} assigned! Booking finalized!`);
         get_bookings();
       } else {
-        alert('error', 'Assignment failed. Please try again.');
+        show_alert('error', 'Assignment failed. Please try again.');
       }
     })
     .catch(() => {
-      alert('error', 'Connection error. Please try again.');
+      show_alert('error', 'Connection error. Please try again.');
       btn.disabled  = false;
       btn.innerHTML = 'ASSIGN';
     });
@@ -164,10 +164,10 @@ function cancel_booking(id) {
       .then(r => r.text())
       .then(res => {
         if (res.trim() == '1') {
-          alert('success', 'Booking Cancelled! Full refund will be processed.');
+          show_alert('success', 'Booking Cancelled! Full refund will be processed.');
           get_bookings();
         } else {
-          alert('error', 'Server Down!');
+          show_alert('error', 'Server Down!');
         }
       });
   }
@@ -185,10 +185,10 @@ function mark_no_show(id) {
       .then(r => r.text())
       .then(res => {
         if (res.trim() == '1') {
-          alert('success', 'Guest marked as No-Show. First night forfeited.');
+          show_alert('success', 'Guest marked as No-Show. First night forfeited.');
           get_bookings();
         } else {
-          alert('error', 'Server Down!');
+          show_alert('error', 'Server Down!');
         }
       });
   }
@@ -199,3 +199,6 @@ function mark_no_show(id) {
 window.onload = function () {
   get_bookings();
 };
+
+
+

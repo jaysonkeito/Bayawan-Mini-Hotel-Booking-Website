@@ -1,6 +1,6 @@
 <?php
   // bayawan-mini-hotel-system/admin/admin_booking_records.php
-  
+
   require('includes/admin_essentials.php');
   require('includes/admin_configuration.php');
   adminOnly();
@@ -26,9 +26,18 @@
 
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-              <div class="text-end mb-4">
-                <input type="text" id="search_input" oninput="get_bookings(this.value)" class="form-control shadow-none w-25 ms-auto" placeholder="Type to search...">
+
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <!-- IMPROVEMENT: "Showing X-Y of Z records" label -->
+                <small class="text-muted" id="records-info"></small>
+                <!-- IMPROVEMENT: debounced search via oninput -->
+                <input type="text"
+                       id="search_input"
+                       oninput="debounced_search(this.value)"
+                       class="form-control shadow-none w-25"
+                       placeholder="Search order ID, name, phone...">
               </div>
+
               <div class="table-responsive">
                 <table class="table table-hover border" style="min-width: 1200px;">
                   <thead>
@@ -36,7 +45,7 @@
                       <th scope="col">#</th>
                       <th scope="col">User Details</th>
                       <th scope="col">Room Details</th>
-                      <th scope="col">Bookings Details</th>
+                      <th scope="col">Booking Details</th>
                       <th scope="col">Status</th>
                       <th scope="col">Action</th>
                     </tr>
@@ -44,9 +53,14 @@
                   <tbody id="table-data"></tbody>
                 </table>
               </div>
-              <nav>
-                <ul class="pagination mt-3" id="table-pagination"></ul>
-              </nav>
+
+              <div class="d-flex align-items-center justify-content-between mt-3">
+                <small class="text-muted" id="records-info-bottom"></small>
+                <nav>
+                  <ul class="pagination mb-0" id="table-pagination"></ul>
+                </nav>
+              </div>
+
             </div>
           </div>
 

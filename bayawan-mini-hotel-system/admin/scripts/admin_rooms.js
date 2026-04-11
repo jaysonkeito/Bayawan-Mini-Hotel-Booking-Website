@@ -35,11 +35,11 @@ function add_room() {
   xhr.onload = function () {
     bootstrap.Modal.getInstance(document.getElementById('add-room'))?.hide();
     if (this.responseText == 1) {
-      alert('success', 'New room added!');
+      show_alert('success', 'New room added!');
       add_room_form.reset();
       get_all_rooms(1);
     } else {
-      alert('error', 'Server Down!');
+      show_alert('error', 'Server Down!');
     }
   };
 
@@ -136,11 +136,11 @@ function submit_edit_room() {
   xhr.onload = function () {
     bootstrap.Modal.getInstance(document.getElementById('edit-room'))?.hide();
     if (this.responseText == 1) {
-      alert('success', 'Room data edited!');
+      show_alert('success', 'Room data edited!');
       edit_room_form.reset();
       get_all_rooms(current_rooms_page);
     } else {
-      alert('error', 'Server Down!');
+      show_alert('error', 'Server Down!');
     }
   };
 
@@ -155,10 +155,10 @@ function toggle_status(id, val) {
 
   xhr.onload = function () {
     if (this.responseText == 1) {
-      alert('success', 'Status toggled!');
+      show_alert('success', 'Status toggled!');
       get_all_rooms(current_rooms_page);
     } else {
-      alert('error', 'Server Down!');
+      show_alert('error', 'Server Down!');
     }
   };
 
@@ -183,11 +183,11 @@ function add_image() {
   xhr.open("POST", "ajax/admin_rooms.php", true);
 
   xhr.onload = function () {
-    if (this.responseText == 'inv_img')       alert('error', 'Only JPG, WEBP or PNG images are allowed!', 'image-alert');
-    else if (this.responseText == 'inv_size') alert('error', 'Image should be less than 2MB!', 'image-alert');
-    else if (this.responseText == 'upd_failed') alert('error', 'Image upload failed. Server Down!', 'image-alert');
+    if (this.responseText == 'inv_img')       show_alert('error', 'Only JPG, WEBP or PNG images are allowed!', 'image-show_alert');
+    else if (this.responseText == 'inv_size') show_alert('error', 'Image should be less than 2MB!', 'image-show_alert');
+    else if (this.responseText == 'upd_failed') show_alert('error', 'Image upload failed. Server Down!', 'image-show_alert');
     else {
-      alert('success', 'New image added!', 'image-alert');
+      show_alert('success', 'New image added!', 'image-show_alert');
       room_images(add_image_form.elements['room_id'].value, document.querySelector("#room-images .modal-title").innerText);
       add_image_form.reset();
     }
@@ -223,10 +223,10 @@ function rem_image(img_id, room_id) {
 
   xhr.onload = function () {
     if (this.responseText == 1) {
-      alert('success', 'Image Removed!', 'image-alert');
+      show_alert('success', 'Image Removed!', 'image-show_alert');
       room_images(room_id, document.querySelector("#room-images .modal-title").innerText);
     } else {
-      alert('error', 'Image removal failed!', 'image-alert');
+      show_alert('error', 'Image removal failed!', 'image-show_alert');
     }
   };
 
@@ -244,10 +244,10 @@ function thumb_image(img_id, room_id) {
 
   xhr.onload = function () {
     if (this.responseText == 1) {
-      alert('success', 'Image Thumbnail Changed!', 'image-alert');
+      show_alert('success', 'Image Thumbnail Changed!', 'image-show_alert');
       room_images(room_id, document.querySelector("#room-images .modal-title").innerText);
     } else {
-      alert('error', 'Thumbnail update failed!', 'image-alert');
+      show_alert('error', 'Thumbnail update failed!', 'image-show_alert');
     }
   };
 
@@ -266,10 +266,10 @@ function remove_room(room_id) {
 
     xhr.onload = function () {
       if (this.responseText == 1) {
-        alert('success', 'Room Removed!');
+        show_alert('success', 'Room Removed!');
         get_all_rooms(current_rooms_page);
       } else {
-        alert('error', 'Room removal failed!');
+        show_alert('error', 'Room removal failed!');
       }
     };
 
