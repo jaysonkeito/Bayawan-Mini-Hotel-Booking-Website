@@ -1,6 +1,6 @@
 <?php
 // config/env.php
-// Central environment loader for Bayawan Mini Hotel System.
+// Central environment loader for Cebu Mini Hotel System.
 // Reads .env from the project root, defines all constants once.
 // Every config file requires only this file — nothing else hardcodes a URL or secret.
 
@@ -80,7 +80,7 @@ if (empty(env('APP_URL'))) {
 
 // Application
 if (!defined('APP_URL'))    define('APP_URL',    rtrim(env('APP_URL'), '/'));
-if (!defined('APP_NAME'))   define('APP_NAME',   env('APP_NAME',   'Bayawan Mini Hotel'));
+if (!defined('APP_NAME'))   define('APP_NAME',   env('APP_NAME',   'Cebu Mini Hotel'));
 if (!defined('APP_ENV'))    define('APP_ENV',    env('APP_ENV',    'production'));
 if (!defined('APP_FOLDER')) define('APP_FOLDER', env('APP_FOLDER', 'bayawan-mini-hotel-system'));
 

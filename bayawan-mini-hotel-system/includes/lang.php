@@ -124,15 +124,15 @@ $GLOBALS['_LANG'] = [
 
     // ── About page ────────────────────────────────────────────────────
     'about_title'       => ['en' => 'ABOUT US',                'fil' => 'TUNGKOL SA AMIN'],
-    'about_subtitle'    => ['en' => 'Learn more about Bayawan Mini Hotel — your home away from home in the heart of Bayawan City, Negros Oriental.',
-                            'fil' => 'Alamin ang higit pa tungkol sa Bayawan Mini Hotel — ang inyong tahanan sa puso ng Bayawan City, Negros Oriental.'],
-    'about_welcome'     => ['en' => 'Welcome to Bayawan Mini Hotel', 'fil' => 'Maligayang Pagdating sa Bayawan Mini Hotel'],
-    'about_p1'          => ['en' => 'Bayawan Mini Hotel is a cozy and affordable hotel located in Poblacion, Bayawan City, Negros Oriental, Philippines. We are committed to providing our guests with a warm, comfortable, and memorable stay in the heart of the city.',
-                            'fil' => 'Ang Bayawan Mini Hotel ay isang maaliwalas at abot-kayang hotel na matatagpuan sa Poblacion, Bayawan City, Negros Oriental, Pilipinas. Kami ay nakatuon sa pagbibigay ng mainit, komportable, at di-malilimutang pamamalagi sa puso ng lungsod.'],
+    'about_subtitle'    => ['en' => 'Learn more about Cebu Mini Hotel — your home away from home in the heart of Cebu City, Cebu.',
+                            'fil' => 'Alamin ang higit pa tungkol sa Cebu Mini Hotel — ang inyong tahanan sa puso ng Cebu City, Cebu.'],
+    'about_welcome'     => ['en' => 'Welcome to Cebu Mini Hotel', 'fil' => 'Maligayang Pagdating sa Cebu Mini Hotel'],
+    'about_p1'          => ['en' => 'Cebu Mini Hotel is a cozy and affordable hotel located in Purok 8. Brgy, 39G N Escario St, Camputhaw, Cebu City, 6000 Cebu. We are committed to providing our guests with a warm, comfortable, and memorable stay in the heart of the city.',
+                            'fil' => 'Ang Cebu Mini Hotel ay isang maaliwalas at abot-kayang hotel na matatagpuan sa Purok 8. Brgy, 39G N Escario St, Camputhaw, Cebu City, 6000 Cebu. Kami ay nakatuon sa pagbibigay ng mainit, komportable, at di-malilimutang pamamalagi sa puso ng lungsod.'],
     'about_p2'          => ['en' => 'Whether you are traveling for business or leisure, our hotel offers well-furnished rooms, modern amenities, and friendly service to ensure that your stay exceeds expectations. From our Standard Rooms to our premium Suite, every room is designed with your comfort in mind.',
                             'fil' => 'Anuman ang layunin ng inyong paglalakbay — negosyo man o libangan — ang aming hotel ay nag-aalok ng magandang mga silid, modernong pasilidad, at magiliw na serbisyo upang masigurado na ang inyong pamamalagi ay lampas sa inaasahan.'],
-    'about_p3'          => ['en' => 'We take pride in our prime location, making it easy for guests to explore the beautiful city of Bayawan and nearby attractions in Negros Oriental. Come and experience the warmth of Filipino hospitality at Bayawan Mini Hotel.',
-                            'fil' => 'Ipinagmamalaki namin ang aming magandang lokasyon na nagbibigay-daan sa mga bisita na madaling tuklasin ang magandang lungsod ng Bayawan at mga kalapit-lugar sa Negros Oriental. Halika at maranasan ang init ng Pilipinong pagkamapagpatuloy sa Bayawan Mini Hotel.'],
+    'about_p3'          => ['en' => 'We take pride in our prime location, making it easy for guests to explore the beautiful city of Cebu and nearby attractions in Cebu. Come and experience the warmth of Filipino hospitality at Cebu Mini Hotel.',
+                            'fil' => 'Ipinagmamalaki namin ang aming magandang lokasyon na nagbibigay-daan sa mga bisita na madaling tuklasin ang magandang lungsod ng Cebu at mga kalapit-lugar sa Cebu. Halika at maranasan ang init ng Pilipinong pagkamapagpatuloy sa Cebu Mini Hotel.'],
     'about_stat1_title' => ['en' => '4 ROOM TYPES',            'fil' => '4 URI NG SILID'],
     'about_stat1_sub'   => ['en' => 'Standard, Deluxe, Family & Suite', 'fil' => 'Standard, Deluxe, Pamilya at Suite'],
     'about_stat2_title' => ['en' => '500+ GUESTS',             'fil' => '500+ BISITA'],
@@ -159,8 +159,8 @@ $GLOBALS['_LANG'] = [
 
     // ── Facilities page ───────────────────────────────────────────────
     'fac_title'         => ['en' => 'OUR FACILITIES',          'fil' => 'AMING MGA PASILIDAD'],
-    'fac_subtitle'      => ['en' => 'At Bayawan Mini Hotel, we are committed to providing you with a comfortable and memorable stay. Explore the amenities and services we offer to make your visit in Bayawan City truly enjoyable.',
-                            'fil' => 'Sa Bayawan Mini Hotel, kami ay nakatuon sa pagbibigay sa inyo ng komportable at di-malilimutang pamamalagi. Tuklasin ang mga amenities at serbisyo na aming inaalok upang gawing tunay na kasiya-siya ang inyong pagbisita sa Bayawan City.'],
+    'fac_subtitle'      => ['en' => 'At Cebu Mini Hotel, we are committed to providing you with a comfortable and memorable stay. Explore the amenities and services we offer to make your visit in Cebu City truly enjoyable.',
+                            'fil' => 'Sa Cebu Mini Hotel, kami ay nakatuon sa pagbibigay sa inyo ng komportable at di-malilimutang pamamalagi. Tuklasin ang mga amenities at serbisyo na aming inaalok upang gawing tunay na kasiya-siya ang inyong pagbisita sa Cebu City.'],
 
     // ── Bookings page ─────────────────────────────────────────────────
     'bookings_title'    => ['en' => 'BOOKINGS',                'fil' => 'MGA BOOKING'],

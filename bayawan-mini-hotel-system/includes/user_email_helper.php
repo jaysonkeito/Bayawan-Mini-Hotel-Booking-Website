@@ -52,8 +52,8 @@ function wrapEmailTemplate(string $title, string $content): string {
           <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
             <tr>
               <td style="background:#1a1a2e;padding:24px 32px;text-align:center;">
-                <h1 style="margin:0;color:#2ec1ac;font-size:22px;letter-spacing:1px;">Bayawan Mini Hotel</h1>
-                <p style="margin:4px 0 0;color:#aaa;font-size:12px;">Poblacion, Bayawan City, Negros Oriental</p>
+                <h1 style="margin:0;color:#2ec1ac;font-size:22px;letter-spacing:1px;">Cebu Mini Hotel</h1>
+                <p style="margin:4px 0 0;color:#aaa;font-size:12px;">Purok 8. Brgy, 39G N Escario St, Camputhaw, Cebu City, 6000 Cebu</p>
               </td>
             </tr>
             <tr>
@@ -64,10 +64,10 @@ function wrapEmailTemplate(string $title, string $content): string {
             <tr>
               <td style="background:#f9f9f9;padding:16px 32px;text-align:center;border-top:1px solid #eee;">
                 <p style="margin:0;font-size:12px;color:#999;">
-                  Questions? Email us at <a href="mailto:bayawanminihotel@gmail.com" style="color:#2ec1ac;">bayawanminihotel@gmail.com</a>
+                  Questions? Email us at <a href="mailto:cebu.mini.hotel.cmh@gmail.com" style="color:#2ec1ac;">cebu.mini.hotel.cmh@gmail.com</a>
                 </p>
                 <p style="margin:6px 0 0;font-size:11px;color:#bbb;">
-                  &copy; {$year} Bayawan Mini Hotel. All rights reserved.
+                  &copy; {$year} Cebu Mini Hotel. All rights reserved.
                 </p>
               </td>
             </tr>
@@ -126,7 +126,7 @@ function sendBookingConfirmationEmail(array $d): bool {
         &#10007; Less than 24 hours - First night forfeited
       </p>
     </div>
-    <p style="margin:0;font-size:13px;color:#999;">Thank you for choosing Bayawan Mini Hotel!</p>
+    <p style="margin:0;font-size:13px;color:#999;">Thank you for choosing Cebu Mini Hotel!</p>
     HTML;
 
     // FIX: plain hyphen instead of em-dash (–) to avoid â€" encoding artifact
@@ -214,7 +214,7 @@ function sendArrivalConfirmationEmail(array $d): bool {
         leave a rating &amp; review from the <strong>My Bookings</strong> page after checkout.
       </p>
     </div>
-    <p style="margin:0;font-size:13px;color:#999;">Thank you for staying at Bayawan Mini Hotel!</p>
+    <p style="margin:0;font-size:13px;color:#999;">Thank you for staying at Cebu Mini Hotel!</p>
     HTML;
 
     // FIX: plain hyphen, no em-dash
@@ -254,7 +254,7 @@ function sendRefundProcessedEmail(array $d): bool {
         If you have not received it after 7 business days, please contact us.
       </p>
     </div>
-    <p style="margin:0;font-size:13px;color:#999;">We hope to welcome you again at Bayawan Mini Hotel!</p>
+    <p style="margin:0;font-size:13px;color:#999;">We hope to welcome you again at Cebu Mini Hotel!</p>
     HTML;
 
     // FIX: plain hyphen

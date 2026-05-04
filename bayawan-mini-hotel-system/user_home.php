@@ -219,7 +219,7 @@
 </div>
 
 <!-- Swiper JS + Init -->
-<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+<!-- <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script> -->
 <script>
   var swiper = new Swiper(".swiper-container", {
     spaceBetween: 0,

@@ -154,7 +154,7 @@ if (isset($_POST['verify_2fa'])) {
             select("SELECT * FROM `admin_cred` WHERE `sr_no`=? LIMIT 1", [$admin_id], 'i')
         );
 
-        $tfa = new TwoFactorAuth(new BaconQrCodeProvider(), 'Bayawan Mini Hotel');
+        $tfa = new TwoFactorAuth(new BaconQrCodeProvider(), 'Cebu Mini Hotel');
         $valid = $row && $tfa->verifyCode($row['totp_secret'], $code);
 
         if ($valid) {

@@ -9,7 +9,7 @@ adminLogin();
 use RobThree\Auth\TwoFactorAuth;
 use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
 
-$tfa      = new TwoFactorAuth(new EndroidQrCodeProvider(), 'Bayawan Mini Hotel');
+$tfa      = new TwoFactorAuth(new EndroidQrCodeProvider(), 'Cebu Mini Hotel');
 $admin_id = $_SESSION['adminId'];
 
 // Fetch current admin record
@@ -82,7 +82,7 @@ if (isset($_POST['disable_2fa'])) {
 $qr_code_url = '';
 if (!empty($admin['totp_secret']) && !$admin['totp_enabled']) {
     $qr_code_url = $tfa->getQRCodeImageAsDataUri(
-        $_SESSION['adminName'] . ' (Bayawan)',
+        $_SESSION['adminName'] . ' (Cebu)',
         $admin['totp_secret']
     );
 }

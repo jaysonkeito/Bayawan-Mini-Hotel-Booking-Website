@@ -37,8 +37,8 @@
 <h6 class="text-center bg-dark text-white p-3 m-0">Designed and Developed by Jayson P. Francisco</h6>
 
 <!-- ── Login-nudge toast (shown when guest clicks Book Now while logged out) ── -->
-<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:9999">
-  <div id="bmh-login-toast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:9999; pointer-events:none;">
+  <div id="bmh-login-toast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true" style="pointer-events:auto;">
     <div class="d-flex">
       <div class="toast-body">
         Please log in first to book a room.
@@ -57,7 +57,7 @@
         crossorigin="anonymous"></script>
 
 <!-- Swiper JS -->
-<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+<!-- <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script> -->
 
 <!-- Custom auth script (handles login, register, OTP, toggles) -->
 <script src="scripts/user_login_register.js"></script>

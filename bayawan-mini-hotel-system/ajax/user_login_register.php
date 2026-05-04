@@ -130,9 +130,9 @@ case 'send_otp_register':
     $_SESSION['reg_email']    = $email;
 
     $body = "Hello {$name},<br><br>Your verification code is:<br><h2 style='letter-spacing:6px;'>{$otp}</h2><br>"
-          . "This code is valid for 10 minutes.<br><br>Thank you,<br>Bayawan Mini Hotel";
+          . "This code is valid for 10 minutes.<br><br>Thank you,<br>Cebu Mini Hotel";
 
-    echo sendEmail($email, "Your Bayawan Mini Hotel Verification Code", $body)
+    echo sendEmail($email, "Your Cebu Mini Hotel Verification Code", $body)
         ? "OTP sent"
         : "Failed to send email. Please try again later.";
     break;
@@ -300,9 +300,9 @@ case 'forgot_pass':
           . "<a href='$reset_link'>$reset_link</a><br><br>"
           . "This link is valid for 1 hour.<br><br>"
           . "If you did not request this, please ignore this email.<br><br>"
-          . "Thank you,<br>Bayawan Mini Hotel";
+          . "Thank you,<br>Cebu Mini Hotel";
 
-    echo sendEmail($email, "Reset Your Bayawan Mini Hotel Password", $body)
+    echo sendEmail($email, "Reset Your Cebu Mini Hotel Password", $body)
         ? "success"
         : "mail_failed";
     break;

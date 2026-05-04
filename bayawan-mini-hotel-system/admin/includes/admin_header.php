@@ -181,7 +181,7 @@
   <!-- ─── Top: Logo + Toggle ─── -->
   <div class="d-flex align-items-center justify-content-between px-3 py-3 border-bottom border-secondary flex-shrink-0">
     <div class="menu-label">
-      <h5 class="mb-0 text-white h-font">Bayawan Mini Hotel</h5>
+      <h5 class="mb-0 text-white h-font">Cebu Mini Hotel</h5>
     </div>
     <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
       <i class="bi bi-list"></i>

@@ -1,7 +1,7 @@
 <?php // bayawan-mini-hotel-system/includes/user_header.php ?>
 <nav id="nav-bar" class="navbar navbar-expand-lg navbar-light bg-white px-lg-3 py-lg-2 shadow-sm sticky-top">
     <div class="container-fluid">
-        <a class="navbar-brand me-5 fw-bold fs-3 h-font" href="user_index.php">Bayawan Mini Hotel</a>
+        <a class="navbar-brand me-5 fw-bold fs-3 h-font" href="user_index.php">Cebu Mini Hotel</a>
         <button class="navbar-toggler shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -322,7 +322,7 @@
       </div>
       <div class="modal-body" style="font-size: 0.96rem; line-height: 1.65;">
         <p class="text-center fw-bold mb-4"><strong>Last updated: February 2026</strong></p>
-        <p class="text-center">Welcome to Bayawan Mini Hotel. By using our website and services, you agree to be bound by the following terms and conditions:</p>
+        <p class="text-center">Welcome to Cebu Mini Hotel. By using our website and services, you agree to be bound by the following terms and conditions:</p>
         <h6 class="mt-4">1. Booking & Payment</h6>
         <ul>
           <li>All rates are in Philippine Pesos (&#8369;) and include applicable taxes unless stated otherwise.</li>
@@ -343,7 +343,7 @@
           <li>Quiet hours: 10:00 PM – 7:00 AM</li>
           <li>Maximum occupancy per room type must be respected.</li>
         </ul>
-        <p class="text-center text-muted mt-4 small">Bayawan Mini Hotel reserves the right to modify these terms at any time.</p>
+        <p class="text-center text-muted mt-4 small">Cebu Mini Hotel reserves the right to modify these terms at any time.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -362,7 +362,7 @@
             </div>
             <div class="modal-body" style="font-size: 0.96rem; line-height: 1.65;">
                 <p class="text-center fw-bold mb-4"><strong>Effective Date: March 2026</strong></p>
-                <p class="text-center">At Bayawan Mini Hotel, we respect your privacy and are committed to protecting your personal information.</p>
+                <p class="text-center">At Cebu Mini Hotel, we respect your privacy and are committed to protecting your personal information.</p>
                 <h6 class="mt-4">1. Information We Collect</h6>
                 <ul>
                     <li>Name, email, phone number, address</li>

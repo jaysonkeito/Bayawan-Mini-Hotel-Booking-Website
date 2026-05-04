@@ -1,5 +1,5 @@
 -- ================================================
--- COMPLETE SQL SCRIPT FOR Bayawan Mini Hotel
+-- COMPLETE SQL SCRIPT FOR Cebu Mini Hotel
 -- Database: bmh
 -- Updated: March 2026
 -- Changes from previous version:
@@ -268,7 +268,7 @@ CREATE TABLE `contact_details` (
 INSERT INTO `contact_details`
   (`sr_no`, `address`, `gmap`, `pn1`, `pn2`, `email`, `fb`, `insta`, `tw`, `iframe`)
 VALUES
-  (1, 'Bayawan City, Negros Oriental, Philippines, 6221', '', '09534559021', '09534559022', 'bayawanminihotel@gmail.com', '', '', '', '');
+  (1, 'Cebu City, Negros Oriental, Philippines, 6221', '', '09534559021', '09534559022', 'bayawanminihotel@gmail.com', '', '', '', '');
 
 -- =============================================
 -- 14. settings
@@ -283,7 +283,7 @@ CREATE TABLE `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `settings` (`sr_no`, `site_title`, `site_about`, `shutdown`) VALUES
-(1, 'Bayawan Mini Hotel', 'Welcome to Bayawan Mini Hotel, your home away from home in the heart of Bayawan City, Negros Oriental. We offer comfortable and affordable accommodations for every type of traveler.', 0);
+(1, 'Cebu Mini Hotel', 'Welcome to Cebu Mini Hotel, your home away from home in the heart of Cebu City, Negros Oriental. We offer comfortable and affordable accommodations for every type of traveler.', 0);
 
 -- =============================================
 -- 15. team_details

@@ -98,7 +98,7 @@ function createPaymongoCartCheckout(string $cartRef, array $items): array {
     }
 
     $room_count  = count($items);
-    $description = $room_count . ' Room' . ($room_count > 1 ? 's' : '') . ' — Bayawan Mini Hotel';
+    $description = $room_count . ' Room' . ($room_count > 1 ? 's' : '') . ' — Cebu Mini Hotel';
 
     $payload = [
         'data' => [

@@ -49,7 +49,7 @@
 
     <h2>BAYAWAN MINI HOTEL</h2>
     <h3 style='text-align:center;'>BOOKING RECEIPT</h3>
-    <p style='text-align:center;'>Poblacion, Bayawan City, Negros Oriental, Philippines 6221</p>
+    <p style='text-align:center;'>Poblacion, Cebu City, Negros Oriental, Philippines 6221</p>
     <hr>
 
     <table>
@@ -152,7 +152,7 @@
     $table_data .= "
     </table>
     <p style='text-align:center; margin-top:30px; color:#666; font-size:11px;'>
-      Thank you for choosing Bayawan Mini Hotel!<br>
+      Thank you for choosing Cebu Mini Hotel!<br>
       For inquiries, contact us at cebu.mini.hotel.cmh@gmail.com
     </p>";
 

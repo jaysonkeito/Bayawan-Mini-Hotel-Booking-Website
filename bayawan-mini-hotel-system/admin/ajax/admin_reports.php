@@ -238,7 +238,7 @@ if (isset($_POST['export_pdf'])) {
         .badge-danger  { background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 10px; }
         .badge-warning { background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 10px; }
     </style>
-    <h1>Bayawan Mini Hotel</h1>
+    <h1>Cebu Mini Hotel</h1>
     <h2>" . ucwords(str_replace('_', ' ', $report_type)) . " Report</h2>
     <p>Period: $date_label &nbsp;|&nbsp; Generated: " . date('F j, Y h:i A') . "</p>
     <hr>
@@ -419,7 +419,7 @@ if (isset($_POST['export_excel'])) {
     ];
 
     // Title rows
-    $sheet->setCellValue('A1', 'Bayawan Mini Hotel');
+    $sheet->setCellValue('A1', 'Cebu Mini Hotel');
     $sheet->setCellValue('A2', ucwords(str_replace('_', ' ', $report_type)) . ' Report');
     $sheet->setCellValue('A3', 'Period: ' . $date_label);
     $sheet->setCellValue('A4', 'Generated: ' . date('F j, Y h:i A'));

@@ -14,6 +14,13 @@
             margin-top: -50px;
             z-index: 2;
             position: relative;
+            pointer-events: none;
+        }
+        .availability-form > .row {
+            pointer-events: auto;
+        }
+        #nav-bar {
+            z-index: 1030;
         }
         @media screen and (max-width: 575px) {
             .availability-form {
